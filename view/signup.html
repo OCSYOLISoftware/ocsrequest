@@ -1,0 +1,28 @@
+{% extends 'components/layout.html' %}
+
+{% block title %}Sign Up{% endblock %}
+{% block content %}
+
+<div class="row m-md-5 m-3">
+    <h1 class="col">Create User</h1>
+</div>
+
+<form method="post" action="/data-processing" class="row g-3 mx-sm-5 mx-2">
+    <div class="col-md-4">
+        <label for="ValidationDefault01" class="from-label">Employee ID</label>
+        <input type="text" name="employee_id" class="form-control" id="ValidationDefault01" required>
+    </div>
+    <div class="col-md-4">
+        <label for="ValidationDefault02" class="from-label">Username</label>
+        <input type="text" name="username" class="form-control" id="ValidationDefault02" required>
+    </div>
+    <div class="col-md-4">
+        <label for="ValidationDefault03" class="form-label">Password</label>
+        <input name="password_user" type="password" class="form-control" id="ValidationDefault03">
+    </div>
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Create User</button>
+    </div>
+</form>
+
+{% endblock %}

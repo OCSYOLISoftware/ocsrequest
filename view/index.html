@@ -1,0 +1,21 @@
+{% extends "components/layout.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+    <div class="row m-sm-5 m-3">
+        <h1 class="col">Welcome to OCS Requests</h1>
+    </div>
+
+    <section class="row justify-content-center">
+        <form action="/dashboard" method="post" class="col-sm-5 col-10">
+            <div class="mb-3">
+                <label for="exampleInputUsername" class="form-label">Username</label>
+                <input type="text" name="username" class="form-control" id="exampleInputUsername" required>
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputUsername" class="form-label">Password</label>
+                <input type="password" name="password_user" class="form-control" id="exampleInputUsername" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </section>
+{% endblock %}

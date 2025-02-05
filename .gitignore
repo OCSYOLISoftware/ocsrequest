@@ -1,0 +1,19 @@
+# Ignorar archivos de caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar caché de entornos virtuales
+venv/
+.venv/
+
+# Caché de editores de código
+.vscode/
+.idea/
+.mypy_cache/
+.pytest_cache/
+
+# Archivos de logs y temporales
+*.log
+*.tmp
