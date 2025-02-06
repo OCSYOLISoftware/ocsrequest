@@ -24,13 +24,17 @@ def signup(req: Request):
 def login_user(req: Request, username: str = Form(), password_user: str = Form()):
     verify = check_user(username, password_user)
     if verify:
+        print(f"Inicio de sesión exitoso para el usuario: {username}")
         users = db.get_all()
         return template.TemplateResponse('dashboard.html', {'request': req, "data_user": verify, 'users': users})
-    return RedirectResponse('/', status_code=303) 
+    else:
+        print(f"Error en la autenticación para el usuario: {username}")
+        return RedirectResponse('/', status_code=303) 
 
 @app.get('/dashboard', response_class=HTMLResponse)
 def get_user(req: Request):
     if not req.cookies.get('user_logged_in'):
+        print("no entró")
         return RedirectResponse('/')
     users = db.get_all()
     return template.TemplateResponse('/dashboard.html', {'request': req, 'users': users})

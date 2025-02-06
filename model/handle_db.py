@@ -21,7 +21,7 @@ class HandleDB():
         #Obtener un ususario por employee_id
         conn = self._connect()
         cur = conn.cursor()
-        cur.execute("SELECT * FROM users WHERE employee_id = ?", (data_user,))
+        cur.execute("SELECT * FROM users WHERE username = ?", (data_user,))
         data = cur.fetchone()
         conn.close()
         return data
