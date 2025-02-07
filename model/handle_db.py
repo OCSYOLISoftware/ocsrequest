@@ -5,7 +5,7 @@ class HandleDB():
         self.db_path = db_path
         
     def _connect(self):
-        #Crear una nueva conexion [ara cada solicitud
+        #Crear una nueva conexion para cada solicitud
         return sqlite3.connect(self.db_path, check_same_thread=False)
     
     def get_all(self):
