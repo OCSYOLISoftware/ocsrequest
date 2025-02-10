@@ -22,12 +22,24 @@
             </tr>
         </thead>
         <tbody>
-            {% request in requests %}
+            {% for request in requests %}
             <tr>
-                <td>{{ request['request_id']}}</td>
+                <td>{{ request['request_id'] }}</td>
+                <td>{{ request['user'] }}</td>
+                <td>{{ request['employee'] }}</td>
+                <td>{{ request['department'] }}</td>
+                <td>{{ request['warning'] }}</td>
+                <td>{{ request['reason'] }}</td>
+                <td>{{ request['details'] }}</td>
+                <td>{{ request['status'] }}</td>
+                <td>{{ request['requested'] }}</td>
+                <td>
+                     <!-- Add a button or link to update the request -->
+                    <a href="/update/{{ request['request_id'] }}" class="btn btn-primary">Update</a>
+                </td>
             </tr>
-            {{ % endfor %}}
-        </tbody>
+            {% endfor %}
+        </tbody> 
     </table>
 </div>
 
