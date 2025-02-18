@@ -97,19 +97,7 @@ def show_request_form(req: Request):
     return template.TemplateResponse('request.html', {'request': req, 'users': users, 'employees': employees, 'departments': departments, 'warnings': warnings, 'status': status, 'reasons': reasons })
 
 #Request procesa los datos del formulario y los guarda en la base de datos
-'''@app.post("/request", response_class=HTMLResponse)
-def submit_request(req: Request, username: str = Depends(get_current_user)):
-    try:
-        #Aqui procesa los datos del formulario y los guarda en la base de datos
-        db.insert_request() #Crear funciones para incertar en request dentro de Model
-        return template.TemplateResponse("request.html", {"request": req, "message": "Solicitud enviada exitosamente", "username": username})
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al guardar solicitud: {e}",
-        )'''
-        
-        # Ruta para procesar el formulario de solicitud
+# Ruta para procesar el formulario de solicitud
 @app.post("/request", response_class=HTMLResponse)
 def submit_request(
     req: Request,
