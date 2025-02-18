@@ -3,7 +3,56 @@
 {% block title %}Create Request{% endblock %}
 
 {% block content %}
-<br>
-<h1>Create a Request</h1>
+<div class="row m-md-5 m-3">
+    <h1>Create a Request</h1>
+</div>
+<form method="post" action="/request" class="row g-3 mx-sm-5 mx-2">
+    <div class="col-md-4">
+        <label for="supervisor_id" class="form-label">Supervisor</label>
+        <input type="number" name="supervisor_id" class="form-control" id="supervisor_id" required>
+    </div>
+    <div class="col-md-4">
+        <label for="employee_id" class="form-label">Employee</label>
+        <input type="number" name="employee_id" class="form-control" id="employee_id" required>
+    </div>
+    <div class="col-md-4">
+        <label for="department_id" class="form-label">Department</label>
+        <select name="department_id" class="form-select" id="department_id" required>
+            <option value="">Select Department</option>
+            {% for department in departments %}
+            <option value="{{ department[0] }}">{{ department[1] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label for="warning_id" class="form-label">Warning</label>
+        <select name="warning_id" id="warning_id" class="form-select" required>
+            <option value="">Select Warning</option>
+            {% for warning in warnings %}
+            <option value="{{ warning[0] }}">{{ warning[1] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label for="reason_id" class="form-label">Reason</label>
+        <select name="reason_id" id="reason_id" class="form-select">
+            <option value="">Select Reason</option>
+            {% for reason in reasons %}
+            <option value="{{ reason[0]}}">{{ reason [1] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label for="notes" class="form-label">Details</label>
+        <textarea name="notes" class="form-control" id="notes" required></textarea>  <!-- Usar textarea -->
+    </div>
+    <div class="col-md-4">
+        <label for="requestdate" class="form-label">Request Date</label>
+        <input type="date" name="requestdate" class="form-control" id="requestdate" required>
+    </div>
+    <div class="col-12">
+        <button class="btn btn-primary" type="submit">Submit Request</button>
+    </div>
+</form>
 
 {% endblock %}

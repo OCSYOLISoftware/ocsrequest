@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, Form, Depends, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
+from datetime import date
 from controller.user import User
 from lib.check_passw import check_user
 from model.handle_db import HandleDB
@@ -56,18 +57,47 @@ def login_user(req: Request, username: str = Form(), password_user: str = Form()
     
 #Dashboard muestra el dashboard solo si el usuario ha iniciado sesión.
 @app.get('/dashboard', response_class=HTMLResponse)
-def get_user(req: Request, username: str = Depends(get_current_user)):
-    users = db.get_all()
-    return template.TemplateResponse('dashboard.html', {"request": req, "users": users, 'username': username })
+def get_dashboard(req: Request):
+    # Verificar si el usuario ha iniciado sesión
+    if not req.cookies.get('username'):
+        return RedirectResponse(url='/', status_code=303)
+
+    # Obtener todos los requests desde la base de datos
+    db = HandleDB()
+    requests = db.get_all_requests()
+
+    # Pasar los requests a la plantilla
+    return template.TemplateResponse(
+        'dashboard.html',
+        {'request': req, 'requests': requests}
+    )
     
 #Request muestra el formulario de solicitud solo si el usuario ha iniciado sesión.
-@app.get("/request", response_class=HTMLResponse)
+"""@app.get("/request", response_class=HTMLResponse)
 def create_request(req: Request, username: str = Depends(get_current_user)):
     users = db.get_all()
-    return template.TemplateResponse("request.html", {"request": req, "users": users, "username": username})
+    return template.TemplateResponse("request.html", {"request": req, "users": users, "username": username}) """
+    
+@app.get('/request', response_class=HTMLResponse)
+def show_request_form(req: Request):
+    #Verificar si el usuario ha iniciado sesion
+    if not req.cookies.get('username'):
+        return RedirectResponse(url='/', status_code=303)
+    
+    #Obtener los datos de las tablas relacionadas
+    db = HandleDB()
+    users = db.get_all()
+    employees = db.get_all_employees()
+    departments = db.get_all_departments()
+    warnings = db.get_all_warnings()
+    status = db.get_all_status()
+    reasons = db.get_all_reasons()
+    
+    #Pasar los datos a la platilla
+    return template.TemplateResponse('request.html', {'request': req, 'users': users, 'employees': employees, 'departments': departments, 'warnings': warnings, 'status': status, 'reasons': reasons })
 
 #Request procesa los datos del formulario y los guarda en la base de datos
-@app.post("/request", response_class=HTMLResponse)
+'''@app.post("/request", response_class=HTMLResponse)
 def submit_request(req: Request, username: str = Depends(get_current_user)):
     try:
         #Aqui procesa los datos del formulario y los guarda en la base de datos
@@ -77,7 +107,45 @@ def submit_request(req: Request, username: str = Depends(get_current_user)):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al guardar solicitud: {e}",
+        )'''
+        
+        # Ruta para procesar el formulario de solicitud
+@app.post("/request", response_class=HTMLResponse)
+def submit_request(
+    req: Request,
+    supervisor_id: int = Form(...),  # ID del supervisor
+    employee_id: int = Form(...),    # ID del empleado
+    department_id: int = Form(...),  # ID del departamento
+    warning_id: int = Form(...),     # ID de la advertencia
+    reason_id: int = Form(...),     # ID de la razón
+    notes: str = Form(...),         # Notas adicionales
+    requestdate: str = Form(...),   # Fecha de la solicitud (formato 'YYYY-MM-DD')
+    username: str = Depends(get_current_user),  # Verifica que el usuario haya iniciado sesión
+):
+    try:
+        # Insertar los datos en la tabla requests
+        db.insert_request(
+            supervisor_id=supervisor_id,
+            employee_id=employee_id,
+            department_id=department_id,
+            warning_id=warning_id,
+            reason_id=reason_id,
+            notes=notes,
+            user_id=1,  # Reemplaza con el ID del usuario autenticado
+            requestdate=requestdate,
         )
+        return template.TemplateResponse(
+            "request.html",
+            {"request": req, "message": "Solicitud enviada exitosamente", "username": username}
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al guardar la solicitud: {e}",
+        )
+        
+        
+        
 #logout elimina la cookie username y redirige al usuario a la página de inicio.
 @app.get('/logout')
 def logout():

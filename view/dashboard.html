@@ -10,7 +10,7 @@
         <thead>
             <tr>
                 <th>ID</th>
-                <th>User</th>
+                <th>Supervisor</th>
                 <th>Employee</th>
                 <th>Department</th>
                 <th>Warning</th>
@@ -24,22 +24,22 @@
         <tbody>
             {% for request in requests %}
             <tr>
-                <td>{{ request['request_id'] }}</td>
-                <td>{{ request['user'] }}</td>
-                <td>{{ request['employee'] }}</td>
-                <td>{{ request['department'] }}</td>
-                <td>{{ request['warning'] }}</td>
-                <td>{{ request['reason'] }}</td>
-                <td>{{ request['details'] }}</td>
-                <td>{{ request['status'] }}</td>
-                <td>{{ request['requested'] }}</td>
+                <td>{{ request[0] }}</td>  <!-- request_id -->
+                <td>{{ request[1] }}</td>  <!-- user -->
+                <td>{{ request[2] }}</td>  <!-- employee -->
+                <td>{{ request[3] }}</td>  <!-- department -->
+                <td>{{ request[4] }}</td>  <!-- warning -->
+                <td>{{ request[6] }}</td>  <!-- reason -->
+                <td>{{ request[7] }}</td>  <!-- notes -->
+                <td>{{ request[5] }}</td>  <!-- status -->
+                <td>{{ request[8] }}</td>  <!-- requestdate -->
+                <td>{{ request[9] }}</td>  <!-- requestdate -->
                 <td>
-                     <!-- Add a button or link to update the request -->
-                    <a href="/update/{{ request['request_id'] }}" class="btn btn-primary">Update</a>
+                    <a href="/update/{{ request[0] }}" class="btn btn-primary">Update</a>
                 </td>
             </tr>
             {% endfor %}
-        </tbody> 
+        </tbody>
     </table>
 </div>
 

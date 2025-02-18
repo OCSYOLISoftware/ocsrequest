@@ -42,6 +42,234 @@ class HandleDB():
         cur.execute("DELETE FROM users WHERE username = ?", (username,))
         conn.commit()
         conn.close()
+ #------------------------------------------------------------------------------------------------------------------------       
+        #Insertar en request
+    def insert_request(
+        self,
+        supervisor_id: int,
+        employee_id: int,
+        department_id: int,
+        warning_id: int,
+        reason_id: int,
+        notes: str,
+        user_id: int,
+        requestdate: str,  # Formato: 'YYYY-MM-DD'
+    ):
+        """
+        Inserta una nueva solicitud en la tabla requests.
+        """
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                INSERT INTO requests (
+                    supervisor_id, employee_id, department_id, warning_id,
+                    reason_id, notes, user_id, requestdate
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    supervisor_id, employee_id, department_id, warning_id,
+                    reason_id, notes, user_id, requestdate
+                ),
+            )
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"Error al insertar la solicitud: {e}")
+            raise
+        finally:
+            conn.close()
+            
+        # Leer todas las solicitudes
+    def get_all_requests(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                SELECT 
+                     r.request_id,
+                     s.firstname || ' ' || s.lastname AS supervisor_name, -- Nombre completo del supervisor
+                    e.firstname || ' ' || e.lastname AS employee_name,  -- Nombre completo del empleado
+                    d.department AS department,
+                    w.warning AS warning,
+                    st.status AS status,
+                    rs.reason AS reason,
+                    r.notes,
+                    r.requestdate,
+                    r.updatedate
+                FROM requests r
+                LEFT JOIN employees e ON r.employee_id = e.employee_id       -- Obtener empleado
+                LEFT JOIN employees s ON r.supervisor_id = s.employee_id     -- Obtener supervisor
+                LEFT JOIN departments d ON r.department_id = d.department_id
+                LEFT JOIN warnings w ON r.warning_id = w.warning_id
+                LEFT JOIN status st ON r.status_id = st.status_id
+                LEFT JOIN reasons rs ON r.reason_id = rs.reason_id;
+                """
+            )
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener las solicitudes: {e}")
+            raise
+        finally:
+            conn.close()
+
+    # Leer una solicitud por su request_id
+    def get_request_by_id(self, request_id: int):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT * FROM requests WHERE request_id = ?", (request_id,))
+            data = cur.fetchone()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener la solicitud: {e}")
+            raise
+        finally:
+            conn.close()
+
+    # Actualizar una solicitud por su request_id
+    def update_request(
+        self,
+        request_id: int,
+        supervisor_id: int = None,
+        employee_id: int = None,
+        department_id: int = None,
+        warning_id: int = None,
+        status_id: int = None,
+        reason_id: int = None,
+        notes: str = None,
+        user_id: int = None,
+        requestdate: str = None,  # Formato: 'YYYY-MM-DD'
+    ):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            # Construir la consulta dinámicamente
+            query = "UPDATE requests SET "
+            params = []
+            if supervisor_id is not None:
+                query += "supervisor_id = ?, "
+                params.append(supervisor_id)
+            if employee_id is not None:
+                query += "employee_id = ?, "
+                params.append(employee_id)
+            if department_id is not None:
+                query += "department_id = ?, "
+                params.append(department_id)
+            if warning_id is not None:
+                query += "warning_id = ?, "
+                params.append(warning_id)
+            if status_id is not None:
+                query += "status_id = ?, "
+                params.append(status_id)
+            if reason_id is not None:
+                query += "reason_id = ?, "
+                params.append(reason_id)
+            if notes is not None:
+                query += "notes = ?, "
+                params.append(notes)
+            if user_id is not None:
+                query += "user_id = ?, "
+                params.append(user_id)
+            if requestdate is not None:
+                query += "requestdate = ?, "
+                params.append(requestdate)
+
+            # Eliminar la última coma y agregar la condición WHERE
+            query = query.rstrip(", ") + " WHERE request_id = ?"
+            params.append(request_id)
+
+            # Ejecutar la consulta
+            cur.execute(query, tuple(params))
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"Error al actualizar la solicitud: {e}")
+            raise
+        finally:
+            conn.close()
+
+    # Eliminar una solicitud por su request_id
+    def delete_request(self, request_id: int):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("DELETE FROM requests WHERE request_id = ?", (request_id,))
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"Error al eliminar la solicitud: {e}")
+            raise
+        finally:
+            conn.close()
+            
+#----------------Todas las consultas a las tablas complementarias--------------------------------------------------------------------------------------------
+
+    def get_all_employees(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT employee_id, firstname, lastname FROM employees")
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener los empleados: {e}")
+            raise
+        finally:
+            conn.close()
+
+    def get_all_departments(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT department_id, department FROM departments")
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener los departamentos: {e}")
+            raise
+        finally:
+            conn.close()
+
+    def get_all_warnings(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT warning_id, warning FROM warnings")
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener las advertencias: {e}")
+            raise
+        finally:
+            conn.close()
+
+    def get_all_status(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT status_id, status FROM status")
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener los estados: {e}")
+            raise
+        finally:
+            conn.close()
+
+    def get_all_reasons(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT reason_id, reason FROM reasons")
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener las razones: {e}")
+            raise
+        finally:
+            conn.close()
+
         
     def __del__(self):
         #Cerrar ;a conexion al final 
