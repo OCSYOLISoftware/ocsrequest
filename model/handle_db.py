@@ -90,7 +90,7 @@ class HandleDB():
                 SELECT 
                      r.request_id,
                      s.firstname || ' ' || s.lastname AS supervisor_name, -- Nombre completo del supervisor
-                    e.firstname || ' ' || e.lastname AS employee_name,  -- Nombre completo del empleado
+                    e.employee_id || ' - ' || e.firstname || ' ' || e.lastname AS employee_name,  -- Nombre completo del empleado
                     d.department AS department,
                     w.warning AS warning,
                     st.status AS status,
