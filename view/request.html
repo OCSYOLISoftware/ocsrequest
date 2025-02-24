@@ -13,7 +13,12 @@
     </div>
     <div class="col-md-4">
         <label for="employee_id" class="form-label">Employee</label>
-        <input type="number" name="employee_id" class="form-control" id="employee_id" required>
+        <select name="employee_id" class="form-select" id="employee_id" required>
+            <option value="">Select Employee</option>
+            {% for employee in employees %}
+            <option value="{{ employee[0] }}">{{ employee[0] }} - {{ employee[1] }} {{ employee[2] }}</option>
+            {% endfor %}
+        </select>
     </div>
     <div class="col-md-4">
         <label for="department_id" class="form-label">Department</label>

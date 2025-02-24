@@ -79,15 +79,20 @@ def create_request(req: Request, username: str = Depends(get_current_user)):
     return template.TemplateResponse("request.html", {"request": req, "users": users, "username": username}) """
     
 @app.get('/request', response_class=HTMLResponse)
-def show_request_form(req: Request):
-    #Verificar si el usuario ha iniciado sesion
-    if not req.cookies.get('username'):
-        return RedirectResponse(url='/', status_code=303)
-    
-    #Obtener los datos de las tablas relacionadas
+def show_request_form(req: Request, username: str = Depends(get_current_user)):
+    # Obtener el employee_id del usuario que inició sesión
     db = HandleDB()
+    user_data = db.get_only(username)
+    if not user_data:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    employee_id = user_data[1]  # Suponiendo que employee_id es la cuarta columna
+
+    # Obtener los empleados del mismo departamento
+    employees = db.get_employees_by_department(employee_id)
+    
+    # Obtener los datos de las tablas relacionadas
     users = db.get_all()
-    employees = db.get_all_employees()
     departments = db.get_all_departments()
     warnings = db.get_all_warnings()
     status = db.get_all_status()

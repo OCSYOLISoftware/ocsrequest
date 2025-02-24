@@ -25,6 +25,12 @@ class HandleDB():
         data = cur.fetchone()
         conn.close()
         return data
+    #obtiene el employee_id del usuario
+    def get_employee_id_by_username(self, username: str):
+        user_data = self.get_only(username)
+        if user_data:
+            return user_data[2]  # Suponiendo que employee_id es la tercera columna
+        return None
     
     def insert(self, data_user):
         #Crear un nuevo usuario
@@ -270,7 +276,36 @@ class HandleDB():
         finally:
             conn.close()
 
-        
+# -------Prueba---------------------
+    def get_employees_by_department(self, employee_id: int):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                SELECT e.*
+                FROM employees e
+                JOIN employee_departments ed ON e.employee_id = ed.employee_id
+                WHERE ed.department_id IN (
+                    SELECT ds.department_id
+                    FROM department_supervisor ds
+                    JOIN supervisors s ON ds.supervisor_id = s.supervisor_id
+                    JOIN users u ON s.employee_id = u.employee_id
+                    WHERE u.employee_id = ?
+                )
+                """,
+                (employee_id,)
+            )
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener los empleados: {e}")
+            raise
+        finally:
+            conn.close()
+ #----------------------------------------------------------------------------------       
     def __del__(self):
         #Cerrar ;a conexion al final 
         pass
+    
+    
