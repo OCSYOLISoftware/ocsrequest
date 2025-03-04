@@ -135,24 +135,34 @@ def submit_request(
 # Rutas Add Employee
 @app.get("/addEmployee", response_class=HTMLResponse)
 def show_employee_form(req: Request):
-        # Verificar si el usuario ha iniciado sesión
+    # Verificar si el usuario ha iniciado sesión
     if not req.cookies.get('username'):
         return RedirectResponse(url='/', status_code=303)
     
     # Obtener todos los empleados desde la base de datos
-
     employees = db.get_all_employees()
+    
     # Imprimir en la terminal para verificar los datos
     print("Datos de empleados obtenidos:")
     for employee in employees:
         print(employee)  # Esto imprimirá cada fila completa en la terminal
+    
     departments = db.get_all_departments()
     positions = db.get_all_positions()
     branches = db.get_all_branches()
     modalities = db.get_all_modalities()
     
-    return template.TemplateResponse("addEmployee.html", {'request': req, 'employees': employees, 'departments': departments,'positions': positions, 
-                                                          'branches': branches, 'modalities': modalities})
+    return template.TemplateResponse(
+        "addEmployee.html",
+        {
+            'request': req,
+            'employees': employees,
+            'departments': departments,
+            'positions': positions,
+            'branches': branches,
+            'modalities': modalities
+        }
+    )
 
 @app.post('/addEmployee', response_class=HTMLResponse)
 def add_employee(

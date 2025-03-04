@@ -250,11 +250,7 @@ class HandleDB():
         conn = self._connect()
         cur = conn.cursor()
         try:
-            cur.execute(
-                """
-                SELECT * From employees;
-                """
-            )
+            cur.execute("SELECT * FROM employees")
             data = cur.fetchall()
             return data
         except sqlite3.Error as e:

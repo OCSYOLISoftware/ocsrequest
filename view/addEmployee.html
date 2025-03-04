@@ -73,11 +73,12 @@
                 <th scope="col">Employee ID</th>
                 <th scope="col">Firstname</th>
                 <th scope="col">Lastname</th>
+                <th scope="col">Position ID</th>
                 <th scope="col">Hiredate</th>
-                <th scope="col">Position</th>
-                <th scope="col">Branch</th>
-                <th scope="col">Modality</th>
-                <th scope="col">Updated</th>
+                <th scope="col">Branch ID</th>
+                <th scope="col">Modality ID</th>
+                <th scope="col">Update Date</th>
+                <th scope="col">Active</th>
             </tr>
         </thead>
         <tbody class="table-group-divider">
@@ -86,11 +87,12 @@
                 <td>{{ employee[0] }}</td>  <!-- employee_id -->
                 <td>{{ employee[1] }}</td>  <!-- firstname -->
                 <td>{{ employee[2] }}</td>  <!-- lastname -->
-                <td>{{ employee[3] }}</td>  <!-- hiredate -->
-                <td>{{ employee[4] }}</td>  <!-- position_name -->
-                <td>{{ employee[5] }}</td>  <!-- branch_name -->
-                <td>{{ employee[6] }}</td>  <!-- modality_name -->
+                <td>{{ employee[3] }}</td>  <!-- position_id -->
+                <td>{{ employee[4] }}</td>  <!-- hiredate -->
+                <td>{{ employee[5] }}</td>  <!-- branch_id -->
+                <td>{{ employee[6] }}</td>  <!-- modality_id -->
                 <td>{{ employee[7] }}</td>  <!-- update_date -->
+                <td>{{ employee[8] }}</td>  <!-- active -->
             </tr>
             {% endfor %}
         </tbody>
