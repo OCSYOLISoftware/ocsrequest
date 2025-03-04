@@ -48,7 +48,7 @@ class HandleDB():
         cur.execute("DELETE FROM users WHERE username = ?", (username,))
         conn.commit()
         conn.close()
- #------------------------------------------------------------------------------------------------------------------------       
+ #---------------------------------------------REQUEST---------------------------------------------------------------------------       
         #Insertar en request
     def insert_request(
         self,
@@ -209,6 +209,42 @@ class HandleDB():
         finally:
             conn.close()
             
+#------------------------------Employee---------------------------------------------------------------------------------------------------------------------
+        #Insertar en Employee
+    def insert_employee(
+        self,
+        employee_id: int,
+        firstname: str,
+        lastname: str,
+        position_id: int,
+        hiredate: str,
+        branch_id: int,
+        modality_id: int
+    ):
+        """
+        Inserta una nueva solicitud en la tabla employee.
+        """
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                INSERT INTO employees (
+                    employee_id, firstname, lastname, position_id,
+                    hiredate, branch_id, modality_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    employee_id, firstname, lastname, position_id, hiredate, branch_id, modality_id
+                ),
+            )
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"Error al insertar la solicitud: {e}")
+            raise
+        finally:
+            conn.close()
+     
 #----------------Todas las consultas a las tablas complementarias--------------------------------------------------------------------------------------------
 
     def get_all_employees(self):
@@ -275,7 +311,45 @@ class HandleDB():
             raise
         finally:
             conn.close()
+            
+    def get_all_positions(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT position_id, position FROM positions")
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener las razones: {e}")
+            raise
+        finally:
+            conn.close()
 
+    def get_all_branches(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT branch_id, branch FROM branches")
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener las razones: {e}")
+            raise
+        finally:
+            conn.close()
+            
+    def get_all_modalities(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("SELECT modality_id, modality FROM modalities")
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener las razones: {e}")
+            raise
+        finally:
+            conn.close()
 # -------Prueba---------------------
     def get_employees_by_department(self, employee_id: int):
         conn = self._connect()

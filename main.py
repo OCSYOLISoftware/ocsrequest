@@ -86,7 +86,7 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
     if not user_data:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    employee_id = user_data[1]  # Suponiendo que employee_id es la cuarta columna
+    employee_id = user_data[1] 
 
     # Obtener los empleados del mismo departamento
     employees = db.get_employees_by_department(employee_id)
@@ -137,7 +137,51 @@ def submit_request(
             detail=f"Error al guardar la solicitud: {e}",
         )
         
-        
+# Rutas Add Employee
+@app.get("/addEmployee", response_class=HTMLResponse)
+def show_employee_form(req: Request):
+        # Verificar si el usuario ha iniciado sesión
+    if not req.cookies.get('username'):
+        return RedirectResponse(url='/', status_code=303)
+    
+    departments = db.get_all_departments()
+    positions = db.get_all_positions()
+    branches = db.get_all_branches()
+    modalities = db.get_all_modalities()
+    
+    return template.TemplateResponse("addEmployee.html", {'request': req, 'departments': departments,'positions': positions, 'branches': branches, 'modalities': modalities})
+
+@app.post('/addEmployee', response_class=HTMLResponse)
+def add_employee(
+        req: Request,
+        employee_id: int = Form(...),  # ID del empleadp
+        firstname: str = Form(...),    # nombre del empleado
+        lastname: str = Form(...),     # apellido del empleado
+        position_id: int = Form(...),  # ID de la posicion
+        branch_id: int = Form(...),    # ID del branch
+        modality_id: str = Form(...),  # Id de modalidad
+        hiredate: str = Form(...),     # Fecha de la solicitud (formato 'YYYY-MM-DD')
+): 
+    try:
+    # Insertar los datos en la tabla requests
+        db.insert_employee(
+            employee_id=employee_id,
+            firstname=firstname,
+            lastname=lastname,
+            position_id=position_id,
+            branch_id=branch_id,
+            modality_id=modality_id,
+            hiredate=hiredate
+        )
+        return template.TemplateResponse(
+            "addEmployee.html",
+            {"request": req, "message": "Solicitud enviada exitosamente"}
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al guardar la solicitud: {e}",
+        )
         
 #logout elimina la cookie username y redirige al usuario a la página de inicio.
 @app.get('/logout')
