@@ -244,7 +244,25 @@ class HandleDB():
             raise
         finally:
             conn.close()
-     
+            
+        # Leer todas los empleados
+    def get_all_employees(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                SELECT * From employees;
+                """
+            )
+            data = cur.fetchall()
+            return data
+        except sqlite3.Error as e:
+            print(f"Error al obtener las solicitudes: {e}")
+            raise
+        finally:
+            conn.close()
+
 #----------------Todas las consultas a las tablas complementarias--------------------------------------------------------------------------------------------
 
     def get_all_employees(self):
