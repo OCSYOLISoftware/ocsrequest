@@ -142,10 +142,6 @@ def show_employee_form(req: Request):
     # Obtener todos los empleados desde la base de datos
     employees = db.get_all_employees()
     
-    # Imprimir en la terminal para verificar los datos
-    print("Datos de empleados obtenidos:")
-    for employee in employees:
-        print(employee)  # Esto imprimirá cada fila completa en la terminal
     
     departments = db.get_all_departments()
     positions = db.get_all_positions()
@@ -167,16 +163,17 @@ def show_employee_form(req: Request):
 @app.post('/addEmployee', response_class=HTMLResponse)
 def add_employee(
         req: Request,
-        employee_id: int = Form(...),  # ID del emplead
-        firstname: str = Form(...),    # nombre del empleado
-        lastname: str = Form(...),     # apellido del empleado
-        position_id: int = Form(...),  # ID de la posicion
+        employee_id: int = Form(...),  # ID del empleado
+        firstname: str = Form(...),    # Nombre del empleado
+        lastname: str = Form(...),     # Apellido del empleado
+        position_id: int = Form(...),  # ID de la posición
         branch_id: int = Form(...),    # ID del branch
-        modality_id: str = Form(...),  # Id de modalidad
-        hiredate: str = Form(...),     # Fecha de la solicitud (formato 'YYYY-MM-DD')
-): 
+        modality_id: int = Form(...),  # ID de modalidad
+        hiredate: str = Form(...),     # Fecha de contratación (formato 'YYYY-MM-DD')
+        department_id: int = Form(...)  # ID del departamento 
+):
     try:
-    # Insertar los datos en la tabla requests
+        # Insertar los datos en la tabla employees
         db.insert_employee(
             employee_id=employee_id,
             firstname=firstname,
@@ -186,9 +183,16 @@ def add_employee(
             modality_id=modality_id,
             hiredate=hiredate
         )
+
+        # Insertar los datos en la tabla employee_departments
+        db.insert_employee_department(
+            employee_id=employee_id,
+            department_id=department_id
+        )
+
         return template.TemplateResponse(
             "addEmployee.html",
-            {"request": req, "message": "Solicitud enviada exitosamente"}
+            {"request": req, "message": "Empleado y departamento asignados exitosamente"}
         )
     except Exception as e:
         raise HTTPException(

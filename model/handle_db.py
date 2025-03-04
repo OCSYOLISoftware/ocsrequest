@@ -258,6 +258,42 @@ class HandleDB():
             raise
         finally:
             conn.close()
+     #------------------------Employee_departments------------------------------------------------------------       
+    def insert_employee_department(self, employee_id: int, department_id: int):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                INSERT INTO employee_departments (employee_id, department_id)
+                VALUES (?, ?)
+                """,
+                (employee_id, department_id)
+            )
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"Error al insertar en employee_departments: {e}")
+            raise
+        finally:
+            conn.close()
+     #------------------------supervisor------------------------------------------------------------       
+    def insert_supervisors(self, supervisor_id, employee_id: int):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                INSERT INTO supervisors (supervisor_id,employee_id)
+                VALUES (?, ?)
+                """,
+                (supervisor_id, employee_id)
+            )
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"Error al insertar en employee_departments: {e}")
+            raise
+        finally:
+            conn.close()
 
 #----------------Todas las consultas a las tablas complementarias--------------------------------------------------------------------------------------------
 
