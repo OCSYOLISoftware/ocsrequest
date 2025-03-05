@@ -215,6 +215,7 @@ def add_employee(
             detail=f"Error al guardar la solicitud: {e}",
         )
  #------------------------------------------------------------------------------------------------------------------------------------       
+
 @app.get("/editEmployee/{employee_id}", response_class=HTMLResponse)
 def edit_employee(req: Request, employee_id: int):
     # Verificar si el usuario ha iniciado sesión
@@ -246,52 +247,7 @@ def edit_employee(req: Request, employee_id: int):
             "modalities": modalities
         }
     )
-
-        
-        
-@app.put('/addEmployee/{employee_id}', response_class=HTMLResponse)
-def update_employee(
-        req: Request,
-        employee_id: int,  # ID del empleado a actualizar
-        firstname: str = Form(...),
-        lastname: str = Form(...),
-        position_id: int = Form(...),
-        branch_id: int = Form(...),
-        modality_id: int = Form(...),
-        hiredate: str = Form(...),
-        department_id: int = Form(...)
-):
-    try:
-        # Verificar si el empleado existe
-        existing_employee = db.get_employee_by_id(employee_id)
-        if not existing_employee:
-            raise HTTPException(status_code=404, detail="Empleado no encontrado")
-
-        # Actualizar los datos en la tabla employees
-        db.update_employee(
-            employee_id=employee_id,
-            firstname=firstname,
-            lastname=lastname,
-            position_id=position_id,
-            branch_id=branch_id,
-            modality_id=modality_id,
-            hiredate=hiredate
-        )
-
-        # Actualizar el departamento en employee_departments
-        db.update_employee_department(employee_id=employee_id, department_id=department_id)
-
-        return template.TemplateResponse(
-            "addEmployee.html",
-            {"request": req, "message": "Empleado actualizado correctamente"}
-        )
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"Error al actualizar la solicitud: {e}",
-        )
-        
+    
 @app.post("/updateEmployee/{employee_id}", response_class=HTMLResponse)
 def update_employee(
         req: Request,
@@ -329,32 +285,4 @@ def update_employee(
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al actualizar el empleado: {e}")
-    
-@app.put("/updateEmployee/{employee_id}", response_class=HTMLResponse)
-def edit_employee(
-    employee_id: int,
-    firstname: str = Form(...),
-    lastname: str = Form(...),
-    position_id: int = Form(...),
-    branch_id: int = Form(...),
-    modality_id: int = Form(...),
-    hiredate: str = Form(...),
-    department_id: int = Form(...),
-    active: int = Form(...)  # Agregar este campo
-):
-    try:
-        db.update_employee(
-            employee_id=employee_id,
-            firstname=firstname,
-            lastname=lastname,
-            position_id=position_id,
-            branch_id=branch_id,
-            modality_id=modality_id,
-            hiredate=hiredate,
-            department_id=department_id,
-            active=active  # Pasar el parámetro correctamente
-        )
-        return RedirectResponse(url="/addEmployee", status_code=303)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al actualizar el empleado: {e}")
-
+#----------------------------------------------------------------------------------------------------------

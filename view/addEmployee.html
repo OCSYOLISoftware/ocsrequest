@@ -20,39 +20,41 @@
         <label for="lastname" class="form-label">Last name</label>
         <input type="text" name="lastname" class="form-control" id="lastname" required>
     </div>
+
     <div class="col-md-4">
-        <label for="department_id" class="form-label">Department</label>
-        <select name="department_id" class="form-select" id="department_id" required>
+        <label for="department_id" class="form-label">Department:</label>
+        <select name="department_id" class="form-select" required>
             <option value="">Select Department</option>
-            {% for department in departments %}
-            <option value="{{ department[0] }}">{{ department[1] }}</option>
+            {% for dept in departments %}
+                <option value="{{ dept['department_id'] }}">{{ dept['department'] }}</option>
             {% endfor %}
         </select>
     </div>
+<!-- Nuevo Department es el template para los demas campos    -->
     <div class="col-md-4">
-        <label for="position_id" class="form-label">Position</label>
-        <select name="position_id" class="form-select" id="position_id" required>
+        <label for="position_id" class="form-label">Position:</label>
+        <select name="position_id" class="form-select" required>
             <option value="">Select Position</option>
             {% for position in positions %}
-            <option value="{{ position[0]}}">{{ position[1] }}</option>
+                <option value="{{ position['position_id'] }}">{{ position['position'] }}</option>
             {% endfor %}
         </select>
     </div>
     <div class="col-md-4">
-        <label for="branch_id" class="form-label">Branch</label>
-        <select name="branch_id" class="form-select" id="branch_id" required>
-            <option value="">Select Branch</option>
+        <label for="branch_id" class="form-label">Branch:</label>
+        <select name="branch_id" class="form-select" required>
+            <option value="">Select Position</option>
             {% for branch in branches %}
-            <option value="{{ branch[0]}}">{{ branch[1] }}</option>
+                <option value="{{ branch['branch_id'] }}">{{ branch['branch'] }}</option>
             {% endfor %}
         </select>
     </div>
     <div class="col-md-4">
-        <label for="modality_id" class="form-label">Modality</label>
-        <select name="modality_id" class="form-select" id="modality_id" required>
+        <label for="modality_id" class="form-label">Modality:</label>
+        <select name="modality_id" class="form-select" required>
             <option value="">Select Position</option>
             {% for modality in modalities %}
-            <option value="{{ modality[0]}}">{{ modality[1] }}</option>
+                <option value="{{ modality['modality_id'] }}">{{ modality['modality'] }}</option>
             {% endfor %}
         </select>
     </div>
@@ -60,12 +62,13 @@
         <label for="hiredate" class="form-label">Hire Date</label>
         <input type="date" name="hiredate" class="form-control" id="hiredate" required>
     </div>
-    <div class="col-12">
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
         <button class="btn btn-outline-primary" type="submit">Add Employee</button>
+        <button class="btn btn-outline-danger" type="button" onclick="window.location.href='/addEmployee'">Delete</button>
     </div>
 </form>
 
-<div class="container mt-g">
+<div class="container-fluid w-90 mt-3">
     <h1 class="text-center mb-4">Employees</h1>
     <table class="table">
         <thead>

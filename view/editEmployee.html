@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="row m-md-5 m-3">
-    <h1>Edit Employee</h1>
+    <h1>Update Employee</h1>
 </div>
 
 <form method="POST" action="/updateEmployee/{{ employee['employee_id'] }}" class="row g-3 mx-sm-5 mx-2">
@@ -17,7 +17,18 @@
         <label for="lastname" class="form-label">Last Name:</label>
         <input type="text" name="lastname" value="{{ employee['lastname'] }}" class="form-control" required>
     </div>
-    
+
+    <div class="col-md-4">
+        <label for="department_id" class="form-label">Department:</label>
+        <select name="department_id" class="form-select" required>
+            {% for dept in departments %}
+                <option value="{{ dept['department_id'] }}" {% if dept['department_id'] == employee['department_id'] %}selected{% endif %}>
+                    {{ dept['department'] }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+
     <div class="col-md-4">
         <label for="position_id" class="form-label">Position:</label>
         <select name="position_id" class="form-select" required>
@@ -58,17 +69,6 @@
     </div>
     
     <div class="col-md-4">
-        <label for="department_id" class="form-label">Department:</label>
-        <select name="department_id" class="form-select" required>
-            {% for dept in departments %}
-                <option value="{{ dept['department_id'] }}" {% if dept['department_id'] == employee['department_id'] %}selected{% endif %}>
-                    {{ dept['department'] }}
-                </option>
-            {% endfor %}
-        </select>
-    </div>
-    
-    <div class="col-md-4">
         <label for="active" class="form-label">Status:</label>
         <select name="active" class="form-select" required>
             <option value="1" {% if employee['active'] == 1 %}selected{% endif %}>Active</option>
@@ -76,13 +76,14 @@
         </select>
     </div>
     
-    <div class="col-12">
-        <button class="btn btn-outline-success" type="submit">Update Employee</button>
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <button class="btn btn-outline-primary" type="submit">Update Employee</button>
+        <button class="btn btn-outline-danger" type="button" onclick="window.location.href='/addEmployee'">Cancel</button>
     </div>
     
 </form>
 
-<div class="container mt-g">
+<div class="container-fluid w-90 mt-3">
     <h1 class="text-center mb-4">Employees</h1>
     <table class="table">
         <thead>

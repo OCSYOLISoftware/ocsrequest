@@ -334,11 +334,15 @@ class HandleDB():
         conn = sqlite3.connect("./ocsrequest.db")
         cursor = conn.cursor()
         try:
+            # Agregar impresión para depuración
+            print(f"Updating employee with ID {employee_id}")
+            print(f"Received active status: {active}")
+
             cursor.execute("""
                 UPDATE employees
                 SET firstname = ?, lastname = ?, position_id = ?, branch_id = ?, modality_id = ?, hiredate = ?, active = ?
                 WHERE employee_id = ?
-            """, (firstname, lastname, position_id, branch_id, modality_id, hiredate, active, employee_id))
+            """, (firstname, lastname, position_id, branch_id, modality_id, hiredate, int(active), employee_id))
 
             conn.commit()
 
@@ -355,6 +359,7 @@ class HandleDB():
             raise Exception(f"Error al actualizar el empleado: {e}")
         finally:
             conn.close()
+
 
 
      #------------------------Employee_departments------------------------------------------------------------       
@@ -417,19 +422,19 @@ class HandleDB():
             conn.close()
 
 #----------------Todas las consultas a las tablas complementarias--------------------------------------------------------------------------------------------
-
-    def get_all_departments(self):
-        conn = self._connect()
-        cur = conn.cursor()
+    def get_all_departments(self):  #   Esta funcion es el ejemplo para modificar las de abajo
         try:
-            cur.execute("SELECT department_id, department FROM departments")
-            data = cur.fetchall()
-            return data
+            # Usamos 'with' para manejar la conexión automáticamente
+            with self._connect() as conn:
+                # Creamos el cursor manualmente
+                cur = conn.cursor()
+                cur.execute("SELECT department_id, department FROM departments")
+                departments = [{"department_id": row[0], "department": row[1]} for row in cur.fetchall()]
+            return departments
         except sqlite3.Error as e:
             print(f"Error al obtener los departamentos: {e}")
             raise
-        finally:
-            conn.close()
+
 
     def get_all_warnings(self):
         conn = self._connect()
@@ -535,39 +540,40 @@ class HandleDB():
             raise
         finally:
             conn.close()
- #----------------------------------------------------------------------------------       
-    def __del__(self):
-        #Cerrar ;a conexion al final 
-        pass
     
-    def get_all_departments(self):
-        conn = sqlite3.connect("./ocsrequest.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT department_id, department FROM departments")
-        departments = [{"department_id": row[0], "department": row[1]} for row in cursor.fetchall()]
-        conn.close()
-        return departments
-
+    def __del__(self):
+        #Cerrar la conexion al final 
+        pass
+    #------------------------------------------------Organizar funciones
     def get_all_positions(self):
-        conn = sqlite3.connect("./ocsrequest.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT position_id, position FROM positions")
-        positions = [{"position_id": row[0], "position": row[1]} for row in cursor.fetchall()]
-        conn.close()
-        return positions
-
+        try:
+            with self._connect() as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT position_id, position FROM positions")
+                positions = [{"position_id": row[0], "position": row[1]} for row in cur.fetchall()]
+                return positions
+        except sqlite3.Error as e:
+            print(f"Error al obtener los departamentos: {e}")
+            raise
+        
     def get_all_branches(self):
-        conn = sqlite3.connect("./ocsrequest.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT branch_id, branch FROM branches")
-        branches = [{"branch_id": row[0], "branch": row[1]} for row in cursor.fetchall()]
-        conn.close()
-        return branches
-
+        try:
+            with self._connect() as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT branch_id, branch FROM branches")
+                branches = [{"branch_id": row[0], "branch": row[1]} for row in cur.fetchall()]
+                return branches
+        except sqlite3.Error as e:
+            print(f"Error al obtener las sucursales: {e}")
+            raise
+        
     def get_all_modalities(self):
-        conn = sqlite3.connect("./ocsrequest.db")
-        cursor = conn.cursor()
-        cursor.execute("SELECT modality_id, modality FROM modalities")
-        modalities = [{"modality_id": row[0], "modality": row[1]} for row in cursor.fetchall()]
-        conn.close()
-        return modalities
+        try:
+            with self._connect() as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT modality_id, modality FROM modalities")
+                modalities = [{"modality_id": row[0], "modality": row[1]} for row in cur.fetchall()]
+                return modalities
+        except sqlite3.Error as e:
+            print(f"Error al obtener todas las modalidades: {e}")
+            raise
