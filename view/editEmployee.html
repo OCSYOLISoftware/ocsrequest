@@ -1,0 +1,126 @@
+{% extends "components/layout.html" %}
+
+{% block title %}Edit Employee{% endblock%}
+
+{% block content %}
+<div class="row m-md-5 m-3">
+    <h1>Edit Employee</h1>
+</div>
+
+<form method="POST" action="/updateEmployee/{{ employee['employee_id'] }}" class="row g-3 mx-sm-5 mx-2">
+    <div class="col-md-4">
+        <label for="firstname" class="form-label">First Name:</label>
+        <input type="text" name="firstname" value="{{ employee['firstname'] }}" class="form-control" required>
+    </div>
+    
+    <div class="col-md-4">
+        <label for="lastname" class="form-label">Last Name:</label>
+        <input type="text" name="lastname" value="{{ employee['lastname'] }}" class="form-control" required>
+    </div>
+    
+    <div class="col-md-4">
+        <label for="position_id" class="form-label">Position:</label>
+        <select name="position_id" class="form-select" required>
+            {% for pos in positions %}
+                <option value="{{ pos['position_id'] }}" {% if pos['position_id'] == employee['position_id'] %}selected{% endif %}>
+                    {{ pos['position'] }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-4">
+        <label for="branch_id" class="form-label">Branch:</label>
+        <select name="branch_id" class="form-select" required>
+            {% for br in branches %}
+                <option value="{{ br['branch_id'] }}" {% if br['branch_id'] == employee['branch_id'] %}selected{% endif %}>
+                    {{ br['branch'] }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    
+    <div class="col-md-4">
+        <label for="modality_id" class="form-label">Modality:</label>
+        <select name="modality_id" class="form-select" required>
+            {% for mod in modalities %}
+                <option value="{{ mod['modality_id'] }}" {% if mod['modality_id'] == employee['modality_id'] %}selected{% endif %}>
+                    {{ mod['modality'] }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-4">
+        <label for="hiredate" class="form-label">Hire Date:</label>
+        <input type="date" name="hiredate" value="{{ employee['hiredate'] }}" class="form-control" required>
+    </div>
+    
+    <div class="col-md-4">
+        <label for="department_id" class="form-label">Department:</label>
+        <select name="department_id" class="form-select" required>
+            {% for dept in departments %}
+                <option value="{{ dept['department_id'] }}" {% if dept['department_id'] == employee['department_id'] %}selected{% endif %}>
+                    {{ dept['department'] }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    
+    <div class="col-md-4">
+        <label for="active" class="form-label">Status:</label>
+        <select name="active" class="form-select" required>
+            <option value="1" {% if employee['active'] == 1 %}selected{% endif %}>Active</option>
+            <option value="2" {% if employee['active'] == 2 %}selected{% endif %}>Inactive</option>
+        </select>
+    </div>
+    
+    <div class="col-12">
+        <button class="btn btn-outline-success" type="submit">Update Employee</button>
+    </div>
+    
+</form>
+
+<div class="container mt-g">
+    <h1 class="text-center mb-4">Employees</h1>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">ID #</th>
+                <th scope="col">Firstname</th>
+                <th scope="col">Lastname</th>
+                <th scope="col">Department</th>
+                <th scope="col">Position</th>
+                <th scope="col">Branch</th>
+                <th scope="col">Modality</th>
+                <th scope="col">Hiredate</th>
+                <th scope="col">Update Date</th>
+                <th scope="col">Status</th>
+                <th scope="col">Update</th>
+            </tr>
+        </thead>
+        <tbody class="table-group-divider">
+            {% for employee in employees %}
+            <tr>
+                <td>{{ employee[0] }}</td>   
+                <td>{{ employee[1] }}</td>  
+                <td>{{ employee[2] }}</td>  
+                <td>{{ employee[3] }}</td>  
+                <td>{{ employee[4] }}</td>  
+                <td>{{ employee[5] }}</td>  
+                <td>{{ employee[6] }}</td>  
+                <td>{{ employee[7] }}</td>  
+                <td>{{ employee[8] }}</td>
+                <td>{{ employee[9] }}</td>
+                <td>
+                    <a href="/editEmployee/{{ employee[0] }}" class="btn btn-outline-warning">Update</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+{% endblock %}

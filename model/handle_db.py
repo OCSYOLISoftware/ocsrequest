@@ -1,5 +1,6 @@
 import sqlite3
 
+#-----------------------------Data base connection------------------------------------------------------------------------------
 class HandleDB():
     def __init__(self, db_path="./ocsrequest.db"):
         self.db_path = db_path
@@ -8,6 +9,7 @@ class HandleDB():
         #Crear una nueva conexion para cada solicitud
         return sqlite3.connect(self.db_path, check_same_thread=False)
     
+#-----------------------------Users Table-----------------------------------------------------------------------------------------
     def get_all(self):
         #Obtener todos los usuarios desde la base de datos
         conn = self._connect()
@@ -250,14 +252,111 @@ class HandleDB():
         conn = self._connect()
         cur = conn.cursor()
         try:
-            cur.execute("SELECT * FROM employees")
+            cur.execute(
+                """
+                SELECT 
+                    e.employee_id, 
+                    e.firstname, 
+                    e.lastname,
+                    d.department AS department,
+                    p.position AS position,  
+                    b.branch AS branch,  
+                    m.modality AS modality,
+                    STRFTIME('%m-%d-%Y', e.hiredate) AS hiredate, 
+                    e.update_date,
+                    CASE 
+                        WHEN e.active = 1 THEN 'Active'
+                        WHEN e.active = 2 THEN 'Inactive'
+                        ELSE 'Unknown'
+                    END AS active_status
+                FROM employees e
+                LEFT JOIN positions p ON e.position_id = p.position_id
+                LEFT JOIN branches b ON e.branch_id = b.branch_id
+                LEFT JOIN modalities m ON e.modality_id = m.modality_id
+                LEFT JOIN employee_departments ed ON e.employee_id = ed.employee_id 
+                LEFT JOIN departments d ON ed.department_id = d.department_id;  
+                """
+            )
             data = cur.fetchall()
+            print("Datos obtenidos:", data)  # Depuración
             return data
         except sqlite3.Error as e:
             print(f"Error al obtener las solicitudes: {e}")
             raise
         finally:
             conn.close()
+            
+    def get_employee_by_id(self, employee_id: int):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                SELECT e.employee_id, e.firstname, e.lastname, e.hiredate, 
+                    p.position_id, p.position,  
+                    b.branch_id, b.branch,  
+                    m.modality_id, m.modality,
+                    ed.department_id, d.department
+                FROM employees e
+                LEFT JOIN positions p ON e.position_id = p.position_id
+                LEFT JOIN branches b ON e.branch_id = b.branch_id
+                LEFT JOIN modalities m ON e.modality_id = m.modality_id
+                LEFT JOIN employee_departments ed ON e.employee_id = ed.employee_id
+                LEFT JOIN departments d ON ed.department_id = d.department_id
+                WHERE e.employee_id = ?;
+                """,
+                (employee_id,),
+            )
+            data = cur.fetchone()
+            if data:
+                return {
+                    "employee_id": data[0],
+                    "firstname": data[1],
+                    "lastname": data[2],
+                    "hiredate": data[3],
+                    "position_id": data[4],
+                    "position": data[5],
+                    "branch_id": data[6],
+                    "branch": data[7],
+                    "modality_id": data[8],
+                    "modality": data[9],
+                    "department_id": data[10],
+                    "department": data[11],
+                }
+            return None
+        except sqlite3.Error as e:
+            print(f"Error al obtener el empleado: {e}")
+            raise
+        finally:
+            conn.close()
+            
+    def update_employee(self, employee_id, firstname, lastname, position_id, branch_id, modality_id, hiredate, department_id, active):
+        conn = sqlite3.connect("./ocsrequest.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("""
+                UPDATE employees
+                SET firstname = ?, lastname = ?, position_id = ?, branch_id = ?, modality_id = ?, hiredate = ?, active = ?
+                WHERE employee_id = ?
+            """, (firstname, lastname, position_id, branch_id, modality_id, hiredate, active, employee_id))
+
+            conn.commit()
+
+            # Actualizar la relación con department
+            cursor.execute("""
+                UPDATE employee_departments
+                SET department_id = ?
+                WHERE employee_id = ?
+            """, (department_id, employee_id))
+
+            conn.commit()
+
+        except sqlite3.Error as e:
+            raise Exception(f"Error al actualizar el empleado: {e}")
+        finally:
+            conn.close()
+
+
      #------------------------Employee_departments------------------------------------------------------------       
     def insert_employee_department(self, employee_id: int, department_id: int):
         conn = self._connect()
@@ -276,7 +375,29 @@ class HandleDB():
             raise
         finally:
             conn.close()
-     #------------------------supervisor------------------------------------------------------------       
+            
+    def update_employee_department(self, employee_id: int, department_id: int):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute(
+                """
+                UPDATE employee_departments
+                SET department_id = ?
+                WHERE employee_id = ?;
+                """,
+                (department_id, employee_id),
+            )
+            conn.commit()
+            return True
+        except sqlite3.Error as e:
+            print(f"Error al actualizar el departamento del empleado: {e}")
+            conn.rollback()
+            return False
+        finally:
+            conn.close()
+
+#--------------------------------------------supervisor----------------------------------------------------------------------------------------------------       
     def insert_supervisors(self, supervisor_id, employee_id: int):
         conn = self._connect()
         cur = conn.cursor()
@@ -296,19 +417,6 @@ class HandleDB():
             conn.close()
 
 #----------------Todas las consultas a las tablas complementarias--------------------------------------------------------------------------------------------
-
-    def get_all_employees(self):
-        conn = self._connect()
-        cur = conn.cursor()
-        try:
-            cur.execute("SELECT employee_id, firstname, lastname FROM employees")
-            data = cur.fetchall()
-            return data
-        except sqlite3.Error as e:
-            print(f"Error al obtener los empleados: {e}")
-            raise
-        finally:
-            conn.close()
 
     def get_all_departments(self):
         conn = self._connect()
@@ -432,4 +540,34 @@ class HandleDB():
         #Cerrar ;a conexion al final 
         pass
     
-    
+    def get_all_departments(self):
+        conn = sqlite3.connect("./ocsrequest.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT department_id, department FROM departments")
+        departments = [{"department_id": row[0], "department": row[1]} for row in cursor.fetchall()]
+        conn.close()
+        return departments
+
+    def get_all_positions(self):
+        conn = sqlite3.connect("./ocsrequest.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT position_id, position FROM positions")
+        positions = [{"position_id": row[0], "position": row[1]} for row in cursor.fetchall()]
+        conn.close()
+        return positions
+
+    def get_all_branches(self):
+        conn = sqlite3.connect("./ocsrequest.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT branch_id, branch FROM branches")
+        branches = [{"branch_id": row[0], "branch": row[1]} for row in cursor.fetchall()]
+        conn.close()
+        return branches
+
+    def get_all_modalities(self):
+        conn = sqlite3.connect("./ocsrequest.db")
+        cursor = conn.cursor()
+        cursor.execute("SELECT modality_id, modality FROM modalities")
+        modalities = [{"modality_id": row[0], "modality": row[1]} for row in cursor.fetchall()]
+        conn.close()
+        return modalities

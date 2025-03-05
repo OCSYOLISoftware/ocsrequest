@@ -25,7 +25,7 @@ def get_current_user(req: Request):
 def root(req: Request):
     return template.TemplateResponse('index.html', {'request': req})
 
-#Signup
+#-------------------------Signup---------------------------------------------------------------------------------------------------------------------------------------------------
 @app.get('/signup', response_class=HTMLResponse)
 def signup(req: Request):
     return template.TemplateResponse('signup.html', {'request': req})
@@ -41,7 +41,7 @@ def data_processing(employee_id: str = Form(), username: str = Form(), password_
     db = User(data_user)
     db.create_user()
     return RedirectResponse('/', status_code=303)
-
+# ------------------Dashboard-----------------------------------------------------------------------------------------------------------------------------------------------------
 #dashboard maneja el inicio de sesión y guarda el nombre de usuario en una cookie.
 @app.post('/dashboard', response_class=HTMLResponse)
 def login_user(req: Request, username: str = Form(), password_user: str = Form()):
@@ -72,14 +72,21 @@ def get_dashboard(req: Request):
         {'request': req, 'requests': requests}
     )
     
+#logout elimina la cookie username y redirige al usuario a la página de inicio.
+@app.get('/logout')
+def logout():
+    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    response.delete_cookie(key="username")  # Eliminar la cookie de sesión
+    return response
     
+#-------------------Create Request-----------------------------------------------------------------------------------------------------------------------------------------------------------------------   
 @app.get('/request', response_class=HTMLResponse)
 def show_request_form(req: Request, username: str = Depends(get_current_user)):
     # Obtener el employee_id del usuario que inició sesión
     db = HandleDB()
     user_data = db.get_only(username)
     if not user_data:
-        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+        return HTTPException(status_code=404, detail="Usuario no encontrado")
 
     employee_id = user_data[1] 
 
@@ -94,7 +101,18 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
     reasons = db.get_all_reasons()
     
     #Pasar los datos a la platilla
-    return template.TemplateResponse('request.html', {'request': req, 'users': users, 'employees': employees, 'departments': departments, 'warnings': warnings, 'status': status, 'reasons': reasons })
+    return template.TemplateResponse(
+        'request.html', 
+        {
+            'request': req, 
+            'users': users, 
+            'employees': employees, 
+            'departments': departments, 
+            'warnings': warnings, 
+            'status': status, 
+            'reasons': reasons 
+        }
+    )
 
 #Request procesa los datos del formulario y los guarda en la base de datos
 # Ruta para procesar el formulario de solicitud
@@ -132,7 +150,7 @@ def submit_request(
             detail=f"Error al guardar la solicitud: {e}",
         )
         
-# Rutas Add Employee
+#-----------------------------Add Employee -----------------------------------------------------------------------------------------------------------------------------------------------
 @app.get("/addEmployee", response_class=HTMLResponse)
 def show_employee_form(req: Request):
     # Verificar si el usuario ha iniciado sesión
@@ -141,8 +159,6 @@ def show_employee_form(req: Request):
     
     # Obtener todos los empleados desde la base de datos
     employees = db.get_all_employees()
-    
-    
     departments = db.get_all_departments()
     positions = db.get_all_positions()
     branches = db.get_all_branches()
@@ -160,7 +176,7 @@ def show_employee_form(req: Request):
         }
     )
 
-@app.post('/addEmployee', response_class=HTMLResponse)
+@app.post('/addEmployee', response_class=RedirectResponse)
 def add_employee(
         req: Request,
         employee_id: int = Form(...),  # ID del empleado
@@ -190,19 +206,155 @@ def add_employee(
             department_id=department_id
         )
 
-        return template.TemplateResponse(
-            "addEmployee.html",
-            {"request": req, "message": "Empleado y departamento asignados exitosamente"}
-        )
+        # 🔹 Redirigir a la misma página para refrescar la lista de empleados
+        return RedirectResponse(url='/addEmployee', status_code=303)
+
     except Exception as e:
         raise HTTPException(
             status_code=500,
             detail=f"Error al guardar la solicitud: {e}",
         )
+ #------------------------------------------------------------------------------------------------------------------------------------       
+@app.get("/editEmployee/{employee_id}", response_class=HTMLResponse)
+def edit_employee(req: Request, employee_id: int):
+    # Verificar si el usuario ha iniciado sesión
+    if not req.cookies.get('username'):
+        return RedirectResponse(url='/', status_code=303)
+
+    # Obtener datos del empleado
+    
+    employee = db.get_employee_by_id(employee_id)
+    if not employee:
+        raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+    # Obtener todas las listas necesarias
+    employees = db.get_all_employees()
+    departments = db.get_all_departments()
+    positions = db.get_all_positions()
+    branches = db.get_all_branches()
+    modalities = db.get_all_modalities()
+
+    return template.TemplateResponse(
+        "editEmployee.html",
+        {
+            "request": req,
+            "employee": employee,
+            "employees": employees,
+            "departments": departments,
+            "positions": positions,
+            "branches": branches,
+            "modalities": modalities
+        }
+    )
+
         
-#logout elimina la cookie username y redirige al usuario a la página de inicio.
-@app.get('/logout')
-def logout():
-    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-    response.delete_cookie(key="username")  # Eliminar la cookie de sesión
-    return response
+        
+@app.put('/addEmployee/{employee_id}', response_class=HTMLResponse)
+def update_employee(
+        req: Request,
+        employee_id: int,  # ID del empleado a actualizar
+        firstname: str = Form(...),
+        lastname: str = Form(...),
+        position_id: int = Form(...),
+        branch_id: int = Form(...),
+        modality_id: int = Form(...),
+        hiredate: str = Form(...),
+        department_id: int = Form(...)
+):
+    try:
+        # Verificar si el empleado existe
+        existing_employee = db.get_employee_by_id(employee_id)
+        if not existing_employee:
+            raise HTTPException(status_code=404, detail="Empleado no encontrado")
+
+        # Actualizar los datos en la tabla employees
+        db.update_employee(
+            employee_id=employee_id,
+            firstname=firstname,
+            lastname=lastname,
+            position_id=position_id,
+            branch_id=branch_id,
+            modality_id=modality_id,
+            hiredate=hiredate
+        )
+
+        # Actualizar el departamento en employee_departments
+        db.update_employee_department(employee_id=employee_id, department_id=department_id)
+
+        return template.TemplateResponse(
+            "addEmployee.html",
+            {"request": req, "message": "Empleado actualizado correctamente"}
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error al actualizar la solicitud: {e}",
+        )
+        
+@app.post("/updateEmployee/{employee_id}", response_class=HTMLResponse)
+def update_employee(
+        req: Request,
+        employee_id: int,
+        firstname: str = Form(...),
+        lastname: str = Form(...),
+        position_id: int = Form(...),
+        branch_id: int = Form(...),
+        modality_id: int = Form(...),
+        hiredate: str = Form(...),
+        department_id: int = Form(...),
+        active: int = Form(...)
+):
+    try:
+        # Actualizar los datos del empleado en la base de datos
+        db.update_employee(
+            employee_id=employee_id,
+            firstname=firstname,
+            lastname=lastname,
+            position_id=position_id,
+            branch_id=branch_id,
+            modality_id=modality_id,
+            hiredate=hiredate,
+            department_id=department_id,
+            active=active
+        )
+
+        # Actualizar el departamento del empleado
+        db.update_employee_department(
+            employee_id=employee_id,
+            department_id=department_id
+        )
+
+        return RedirectResponse(url="/addEmployee", status_code=303)
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al actualizar el empleado: {e}")
+    
+@app.put("/updateEmployee/{employee_id}", response_class=HTMLResponse)
+def edit_employee(
+    employee_id: int,
+    firstname: str = Form(...),
+    lastname: str = Form(...),
+    position_id: int = Form(...),
+    branch_id: int = Form(...),
+    modality_id: int = Form(...),
+    hiredate: str = Form(...),
+    department_id: int = Form(...),
+    active: int = Form(...)  # Agregar este campo
+):
+    try:
+        db.update_employee(
+            employee_id=employee_id,
+            firstname=firstname,
+            lastname=lastname,
+            position_id=position_id,
+            branch_id=branch_id,
+            modality_id=modality_id,
+            hiredate=hiredate,
+            department_id=department_id,
+            active=active  # Pasar el parámetro correctamente
+        )
+        return RedirectResponse(url="/addEmployee", status_code=303)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al actualizar el empleado: {e}")
+
