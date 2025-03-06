@@ -9,23 +9,25 @@
 <form method="post" action="/request" class="row g-3 mx-sm-5 mx-2">
     <div class="col-md-4">
         <label for="supervisor_id" class="form-label">Supervisor</label>
-        <input type="number" name="supervisor_id" class="form-control" id="supervisor_id" required>
+        <select name="supervisor_id" class="form-select" required>
+            <option value="{{ supervisor_id }}" selected>{{ supervisor_name }}</option>
+        </select>
     </div>
     <div class="col-md-4">
         <label for="employee_id" class="form-label">Employee</label>
         <select name="employee_id" class="form-select" id="employee_id" required>
             <option value="">Select Employee</option>
             {% for employee in employees %}
-            <option value="{{ employee[0] }}">{{ employee[1] }} {{ employee[2] }}</option>
+                <option value="{{ employee['employee_id'] }}">{{ employee['name'] }}</option>
             {% endfor %}
         </select>
     </div>
     <div class="col-md-4">
-        <label for="department_id" class="form-label">Department</label>
-        <select name="department_id" class="form-select" id="department_id" required>
+        <label for="department_id" class="form-label">Department:</label>
+        <select name="department_id" class="form-select" required>
             <option value="">Select Department</option>
-            {% for department in departments %}
-            <option value="{{ department[0] }}">{{ department[1] }}</option>
+            {% for department_by_employee in get_departments_by_employee %}
+                <option value="{{ department_by_employee['department_id'] }}">{{ department_by_employee['department'] }}</option>
             {% endfor %}
         </select>
     </div>
@@ -34,7 +36,7 @@
         <select name="warning_id" id="warning_id" class="form-select" required>
             <option value="">Select Warning</option>
             {% for warning in warnings %}
-            <option value="{{ warning[0] }}">{{ warning[1] }}</option>
+                <option value="{{ warning['warning_id'] }}">{{ warning['warning'] }}</option>
             {% endfor %}
         </select>
     </div>
@@ -43,7 +45,7 @@
         <select name="reason_id" id="reason_id" class="form-select">
             <option value="">Select Reason</option>
             {% for reason in reasons %}
-            <option value="{{ reason[0]}}">{{ reason [1] }}</option>
+            <option value="{{ reason['reason_id']}}">{{ reason['reason'] }}</option>
             {% endfor %}
         </select>
     </div>

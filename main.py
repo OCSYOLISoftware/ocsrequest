@@ -90,13 +90,13 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
 
     employee_id = user_data[1] 
 
-    # Obtener los empleados del mismo departamento
+    # Joins
     employees = db.get_employees_by_department(employee_id)
-    
+    get_departments_by_employee = db.get_departments_by_employee(employee_id)
+    supervisor = db.get_supervisor_for_current_user(username)
     # Obtener los datos de las tablas relacionadas
     requests = db.get_all_requests()
     users = db.get_all()
-    departments = db.get_all_departments()
     warnings = db.get_all_warnings()
     status = db.get_all_status()
     reasons = db.get_all_reasons()
@@ -108,7 +108,9 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
             'request': req, 
             'users': users, 
             'employees': employees, 
-            'departments': departments, 
+            'get_departments_by_employee': get_departments_by_employee,
+            'supervisor_id': supervisor["employee_id"], 
+            'supervisor_name': supervisor["name"], 
             'warnings': warnings, 
             'status': status, 
             'reasons': reasons,
@@ -143,10 +145,8 @@ def submit_request(
             user_id=1,  # Reemplaza con el ID del usuario autenticado
             requestdate=requestdate,
         )
-        return template.TemplateResponse(
-            "request.html",
-            {"request": req, "message": "Solicitud enviada exitosamente", "username": username}
-        )
+        return RedirectResponse(url='/request', status_code=303)
+         
     except Exception as e:
         raise HTTPException(
             status_code=500,

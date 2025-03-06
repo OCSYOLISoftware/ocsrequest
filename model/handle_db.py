@@ -20,13 +20,14 @@ class HandleDB():
         return data
     
     def get_only(self, data_user):
-        #Obtener un ususario por employee_id
         conn = self._connect()
         cur = conn.cursor()
         cur.execute("SELECT * FROM users WHERE username = ?", (data_user,))
         data = cur.fetchone()
         conn.close()
+        
         return data
+
     #obtiene el employee_id del usuario
     def get_employee_id_by_username(self, username: str):
         user_data = self.get_only(username)
@@ -437,17 +438,14 @@ class HandleDB():
 
 
     def get_all_warnings(self):
-        conn = self._connect()
-        cur = conn.cursor()
         try:
-            cur.execute("SELECT warning_id, warning FROM warnings")
-            data = cur.fetchall()
-            return data
+            with self._connect() as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT warning_id, warning FROM warnings")
+                warnings = [{"warning_id": row[0], "warning": row[1]} for row in cur.fetchall()]
+                return warnings
         except sqlite3.Error as e:
-            print(f"Error al obtener las advertencias: {e}")
-            raise
-        finally:
-            conn.close()
+            print(f"Error al obtener todas los warnings: {e}")
 
     def get_all_status(self):
         conn = self._connect()
@@ -463,30 +461,15 @@ class HandleDB():
             conn.close()
 
     def get_all_reasons(self):
-        conn = self._connect()
-        cur = conn.cursor()
         try:
-            cur.execute("SELECT reason_id, reason FROM reasons")
-            data = cur.fetchall()
-            return data
+            with self._connect() as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT reason_id, reason FROM reasons")
+                reasons = [{"reason_id": row[0], "reason": row[1]} for row in cur.fetchall()]
+                return reasons
         except sqlite3.Error as e:
-            print(f"Error al obtener las razones: {e}")
+            print(f"Error al obtener todas las rasones: {e}")
             raise
-        finally:
-            conn.close()
-            
-    def get_all_positions(self):
-        conn = self._connect()
-        cur = conn.cursor()
-        try:
-            cur.execute("SELECT position_id, position FROM positions")
-            data = cur.fetchall()
-            return data
-        except sqlite3.Error as e:
-            print(f"Error al obtener las razones: {e}")
-            raise
-        finally:
-            conn.close()
 
     def get_all_branches(self):
         conn = self._connect()
@@ -514,36 +497,8 @@ class HandleDB():
         finally:
             conn.close()
 # -------Prueba---------------------
-    def get_employees_by_department(self, employee_id: int):
-        conn = self._connect()
-        cur = conn.cursor()
-        try:
-            cur.execute(
-                """
-                SELECT e.*
-                FROM employees e
-                JOIN employee_departments ed ON e.employee_id = ed.employee_id
-                WHERE ed.department_id IN (
-                    SELECT ds.department_id
-                    FROM department_supervisor ds
-                    JOIN supervisors s ON ds.supervisor_id = s.supervisor_id
-                    JOIN users u ON s.employee_id = u.employee_id
-                    WHERE u.employee_id = ?
-                )
-                """,
-                (employee_id,)
-            )
-            data = cur.fetchall()
-            return data
-        except sqlite3.Error as e:
-            print(f"Error al obtener los empleados: {e}")
-            raise
-        finally:
-            conn.close()
     
-    def __del__(self):
-        #Cerrar la conexion al final 
-        pass
+
     #------------------------------------------------Organizar funciones
     def get_all_positions(self):
         try:
@@ -576,4 +531,82 @@ class HandleDB():
                 return modalities
         except sqlite3.Error as e:
             print(f"Error al obtener todas las modalidades: {e}")
+            raise
+        
+    #---------------Re organizar  son consultas de pantalla Request
+    
+
+                
+
+    def get_employees_by_department(self, employee_id: int):
+        try:
+            with self._connect() as conn:
+                cur = conn.cursor()
+                
+                query = """
+                SELECT e.employee_id, e.firstname || ' ' || e.lastname AS name
+                FROM employees e
+                JOIN employee_departments ed ON e.employee_id = ed.employee_id
+                WHERE ed.department_id IN (
+                    SELECT ds.department_id
+                    FROM department_supervisor ds
+                    JOIN supervisors s ON ds.supervisor_id = s.supervisor_id
+                    JOIN users u ON s.employee_id = u.employee_id
+                    WHERE u.employee_id = ?
+                )
+                AND e.employee_id != ?;
+                """
+                
+                # Si employee_id es el supervisor, pasas el mismo employee_id para ambos parámetros
+                cur.execute(query, (employee_id, employee_id))
+                rows = cur.fetchall()
+                employees_by_department = [{"employee_id": row[0], "name": row[1]} for row in rows]
+                return employees_by_department
+
+        except sqlite3.Error as e:
+            print(f"Error al obtener los empleados ligados al supervisor: {e}")
+            raise    
+        
+    def get_departments_by_employee(self, employee_id):
+        try:
+            with self._connect() as conn:
+                cur = conn.cursor()
+                cur.execute(
+                    """
+                    SELECT d.department_id, d.department 
+                    FROM departments d
+                    JOIN employee_departments ed ON d.department_id = ed.department_id
+                    WHERE ed.employee_id = ?
+                    """,
+                    (employee_id,),
+                )
+                return [
+                    {"department_id": row[0], "department": row[1]}
+                    for row in cur.fetchall()
+                ]
+        except sqlite3.Error as e:
+            raise RuntimeError(f"Error al obtener los departamentos del empleado: {e}") from e
+##-----------------------Pruebas-----------------------------
+    def get_supervisor_for_current_user(self, username: str):
+        try:
+            with self._connect() as conn:
+                cur = conn.cursor()
+
+                query = """
+                SELECT e.employee_id, e.firstname || ' ' || e.lastname AS name
+                FROM users u
+                JOIN employees e ON u.employee_id = e.employee_id
+                WHERE u.username = ?
+                """
+
+                cur.execute(query, (username,))
+                row = cur.fetchone()
+
+                if row:
+                    return {"employee_id": row[0], "name": row[1]}
+                else:
+                    raise ValueError("No se encontró el supervisor para el usuario")
+
+        except sqlite3.Error as e:
+            print(f"Error al obtener el supervisor: {e}")
             raise
