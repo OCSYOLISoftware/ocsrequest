@@ -59,17 +59,17 @@ def login_user(req: Request, username: str = Form(), password_user: str = Form()
 @app.get('/dashboard', response_class=HTMLResponse)
 def get_dashboard(req: Request):
     # Verificar si el usuario ha iniciado sesión
-    if not req.cookies.get('username'):
+    username = req.cookies.get('username')
+    if not username:
         return RedirectResponse(url='/', status_code=303)
-
-    # Obtener todos los requests desde la base de datos
-    db = HandleDB()
-    requests = db.get_all_requests()
 
     # Pasar los requests a la plantilla
     return template.TemplateResponse(
         'dashboard.html',
-        {'request': req, 'requests': requests}
+        {
+            'request': req, 
+            "username": username
+        }
     )
     
 #logout elimina la cookie username y redirige al usuario a la página de inicio.
@@ -94,6 +94,7 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
     employees = db.get_employees_by_department(employee_id)
     
     # Obtener los datos de las tablas relacionadas
+    requests = db.get_all_requests()
     users = db.get_all()
     departments = db.get_all_departments()
     warnings = db.get_all_warnings()
@@ -110,7 +111,9 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
             'departments': departments, 
             'warnings': warnings, 
             'status': status, 
-            'reasons': reasons 
+            'reasons': reasons,
+            "username": username,
+            "requests": requests 
         }
     )
 
@@ -154,7 +157,8 @@ def submit_request(
 @app.get("/addEmployee", response_class=HTMLResponse)
 def show_employee_form(req: Request):
     # Verificar si el usuario ha iniciado sesión
-    if not req.cookies.get('username'):
+    username = req.cookies.get('username')
+    if not username:
         return RedirectResponse(url='/', status_code=303)
     
     # Obtener todos los empleados desde la base de datos
@@ -172,7 +176,8 @@ def show_employee_form(req: Request):
             'departments': departments,
             'positions': positions,
             'branches': branches,
-            'modalities': modalities
+            'modalities': modalities,
+            "username": username
         }
     )
 
@@ -219,7 +224,8 @@ def add_employee(
 @app.get("/editEmployee/{employee_id}", response_class=HTMLResponse)
 def edit_employee(req: Request, employee_id: int):
     # Verificar si el usuario ha iniciado sesión
-    if not req.cookies.get('username'):
+    username = req.cookies.get('username')
+    if not username:
         return RedirectResponse(url='/', status_code=303)
 
     # Obtener datos del empleado
@@ -244,7 +250,8 @@ def edit_employee(req: Request, employee_id: int):
             "departments": departments,
             "positions": positions,
             "branches": branches,
-            "modalities": modalities
+            "modalities": modalities,
+            "username": username
         }
     )
     

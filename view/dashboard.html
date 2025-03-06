@@ -6,43 +6,7 @@
 <div class="row m-md-5 m-3">
     <H1>Dashboard</H1>
 </div>
-<div class="container mt-g">
-    <h1 class="text-center mb-4">Pending Requests</h1>
-    <table class="table">
-        <thead>
-            <tr>
-                <th scope="col">ID</th>
-                <th scope="col">Supervisor</th>
-                <th scope="col">Employee</th>
-                <th scope="col">Department</th>
-                <th scope="col">Warning</th>
-                <th scope="col">Reason</th>
-                <th scope="col">Details</th>
-                <th scope="col">Status</th>
-                <th scope="col">Requested</th>
-                <th scope="col">Updated</th>
-            </tr>
-        </thead>
-        <tbody class="table-group-divider">
-            {% for request in requests %}
-            <tr>
-                <td>{{ request[0] }}</td>  <!-- request_id -->
-                <td>{{ request[1] }}</td>  <!-- supervisor -->
-                <td>{{ request[2] }}</td>  <!-- employee -->
-                <td>{{ request[3] }}</td>  <!-- department -->
-                <td>{{ request[4] }}</td>  <!-- warning -->
-                <td>{{ request[6] }}</td>  <!-- reason -->
-                <td>{{ request[7] }}</td>  <!-- notes -->
-                <td>{{ request[5] }}</td>  <!-- status -->
-                <td>{{ request[8] }}</td>  <!-- requestdate -->
-                <td>{{ request[9] }}</td>  <!-- Updated -->
-                <td>
-                    <a href="/update/{{ request[0] }}" class="btn btn-outline-warning">Update</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+
+
 
 {% endblock %}
