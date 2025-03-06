@@ -259,7 +259,7 @@ class HandleDB():
                     e.employee_id, 
                     e.firstname, 
                     e.lastname,
-                    d.department AS department,
+                    GROUP_CONCAT(d.department, ', ') AS department,  -- Concatenar departamentos separados por coma
                     p.position AS position,  
                     b.branch AS branch,  
                     m.modality AS modality,
@@ -275,7 +275,9 @@ class HandleDB():
                 LEFT JOIN branches b ON e.branch_id = b.branch_id
                 LEFT JOIN modalities m ON e.modality_id = m.modality_id
                 LEFT JOIN employee_departments ed ON e.employee_id = ed.employee_id 
-                LEFT JOIN departments d ON ed.department_id = d.department_id;  
+                LEFT JOIN departments d ON ed.department_id = d.department_id
+                GROUP BY e.employee_id, e.firstname, e.lastname, p.position, b.branch, m.modality, e.hiredate, e.update_date, e.active;
+  
                 """
             )
             data = cur.fetchall()
@@ -544,7 +546,9 @@ class HandleDB():
                 cur = conn.cursor()
                 
                 query = """
-                SELECT e.employee_id, e.firstname || ' ' || e.lastname AS name
+                SELECT 
+                    e.employee_id, 
+                    e.firstname || ' ' || e.lastname AS name
                 FROM employees e
                 JOIN employee_departments ed ON e.employee_id = ed.employee_id
                 WHERE ed.department_id IN (
@@ -554,7 +558,8 @@ class HandleDB():
                     JOIN users u ON s.employee_id = u.employee_id
                     WHERE u.employee_id = ?
                 )
-                AND e.employee_id != ?;
+                AND e.employee_id != ?
+                GROUP BY e.employee_id, e.firstname, e.lastname;
                 """
                 
                 # Si employee_id es el supervisor, pasas el mismo employee_id para ambos parámetros
