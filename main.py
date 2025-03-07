@@ -128,9 +128,9 @@ def submit_request(
     employee_id: int = Form(...),    # ID del empleado
     department_id: int = Form(...),  # ID del departamento
     warning_id: int = Form(...),     # ID de la advertencia
-    reason_id: int = Form(...),     # ID de la razón
-    notes: str = Form(...),         # Notas adicionales
-    requestdate: str = Form(...),   # Fecha de la solicitud (formato 'YYYY-MM-DD')
+    reason_id: int = Form(...),      # ID de la razón
+    notes: str = Form(...),          # Notas adicionales
+    requestdate: str = Form(...),    # Fecha de la solicitud (formato 'YYYY-MM-DD')
     username: str = Depends(get_current_user),  # Verifica que el usuario haya iniciado sesión
 ):
     try:
@@ -142,7 +142,7 @@ def submit_request(
             warning_id=warning_id,
             reason_id=reason_id,
             notes=notes,
-            user_id=1,  # Reemplaza con el ID del usuario autenticado
+            user_id=None,  # Asigna None para dejarlo en blanco en la base de datos
             requestdate=requestdate,
         )
         return RedirectResponse(url='/request', status_code=303)
@@ -152,6 +152,7 @@ def submit_request(
             status_code=500,
             detail=f"Error al guardar la solicitud: {e}",
         )
+
         
 #-----------------------------Add Employee -----------------------------------------------------------------------------------------------------------------------------------------------
 @app.get("/addEmployee", response_class=HTMLResponse)
@@ -264,7 +265,7 @@ def update_employee(
         position_id: int = Form(...),
         branch_id: int = Form(...),
         modality_id: int = Form(...),
-        hiredate: str = Form(...),
+        #hiredate: str = Form(...),
         department_id: int = Form(...),
         active: int = Form(...)
 ):
@@ -277,7 +278,7 @@ def update_employee(
             position_id=position_id,
             branch_id=branch_id,
             modality_id=modality_id,
-            hiredate=hiredate,
+            #hiredate=hiredate,
             department_id=department_id,
             active=active
         )

@@ -1,0 +1,10 @@
+services:
+     requestocs:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+        - .:/requestocs
+        ports:
+        - '8080:80'
+

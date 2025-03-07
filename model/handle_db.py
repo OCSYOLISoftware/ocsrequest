@@ -61,7 +61,7 @@ class HandleDB():
         warning_id: int,
         reason_id: int,
         notes: str,
-        user_id: int,
+        user_id: int,  # Esto se dejará como None si no se quiere asignar
         requestdate: str,  # Formato: 'YYYY-MM-DD'
     ):
         """
@@ -70,6 +70,10 @@ class HandleDB():
         conn = self._connect()
         cur = conn.cursor()
         try:
+            # Si user_id es None, se insertará NULL en la base de datos
+            if user_id is None:
+                user_id = None  # Asegúrate de que el valor sea None en lugar de un número predeterminado
+
             cur.execute(
                 """
                 INSERT INTO requests (
@@ -97,15 +101,16 @@ class HandleDB():
             cur.execute(
                 """
                 SELECT 
-                     r.request_id,
-                     s.firstname || ' ' || s.lastname AS supervisor_name, -- Nombre completo del supervisor
+                    r.request_id, 
+                    s.firstname || ' ' || s.lastname AS supervisor_name, -- Nombre completo del supervisor
                     e.employee_id || ' - ' || e.firstname || ' ' || e.lastname AS employee_name,  -- Nombre completo del empleado
                     d.department AS department,
                     w.warning AS warning,
-                    st.status AS status,
                     rs.reason AS reason,
                     r.notes,
+                    st.status AS status,
                     r.requestdate,
+                    u.firstname || ' ' || u.lastname AS assigned_employee_name, -- Nombre completo de la persona que se hará cargo
                     r.updatedate
                 FROM requests r
                 LEFT JOIN employees e ON r.employee_id = e.employee_id       -- Obtener empleado
@@ -113,7 +118,12 @@ class HandleDB():
                 LEFT JOIN departments d ON r.department_id = d.department_id
                 LEFT JOIN warnings w ON r.warning_id = w.warning_id
                 LEFT JOIN status st ON r.status_id = st.status_id
-                LEFT JOIN reasons rs ON r.reason_id = rs.reason_id;
+                LEFT JOIN reasons rs ON r.reason_id = rs.reason_id
+                LEFT JOIN users us ON r.user_id = us.user_id                 -- Obtener el usuario que se hará cargo
+                LEFT JOIN employees u ON us.employee_id = u.employee_id;     -- Obtener el nombre completo del encargado de la solicitud
+
+
+
                 """
             )
             data = cur.fetchall()
@@ -333,7 +343,7 @@ class HandleDB():
         finally:
             conn.close()
             
-    def update_employee(self, employee_id, firstname, lastname, position_id, branch_id, modality_id, hiredate, department_id, active):
+    def update_employee(self, employee_id, firstname, lastname, position_id, branch_id, modality_id,  department_id, active):
         conn = sqlite3.connect("./ocsrequest.db")
         cursor = conn.cursor()
         try:
@@ -343,9 +353,9 @@ class HandleDB():
 
             cursor.execute("""
                 UPDATE employees
-                SET firstname = ?, lastname = ?, position_id = ?, branch_id = ?, modality_id = ?, hiredate = ?, active = ?
+                SET firstname = ?, lastname = ?, position_id = ?, branch_id = ?, modality_id = ?, active = ?
                 WHERE employee_id = ?
-            """, (firstname, lastname, position_id, branch_id, modality_id, hiredate, int(active), employee_id))
+            """, (firstname, lastname, position_id, branch_id, modality_id,  int(active), employee_id))
 
             conn.commit()
 
