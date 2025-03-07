@@ -121,9 +121,6 @@ class HandleDB():
                 LEFT JOIN reasons rs ON r.reason_id = rs.reason_id
                 LEFT JOIN users us ON r.user_id = us.user_id                 -- Obtener el usuario que se hará cargo
                 LEFT JOIN employees u ON us.employee_id = u.employee_id;     -- Obtener el nombre completo del encargado de la solicitud
-
-
-
                 """
             )
             data = cur.fetchall()
@@ -139,75 +136,95 @@ class HandleDB():
         conn = self._connect()
         cur = conn.cursor()
         try:
-            cur.execute("SELECT * FROM requests WHERE request_id = ?", (request_id,))
+            cur.execute(
+                """
+                SELECT 
+                    r.request_id, 
+                    r.supervisor_id,
+                    r.employee_id,
+                    r.department_id,
+                    r.warning_id,
+                    r.reason_id,
+                    r.notes,
+                    r.status_id,
+                    r.requestdate,
+                    r.user_id,
+                    r.updatedate,
+                    s.firstname || ' ' || s.lastname AS supervisor_name, -- Nombre completo del supervisor
+                    e.firstname || ' ' || e.lastname AS employee_name,    -- Nombre completo del empleado
+                    d.department AS department,
+                    w.warning AS warning,
+                    rs.reason AS reason,
+                    st.status AS status,
+                    u.firstname || ' ' || u.lastname AS assigned_employee_name -- Nombre completo del usuario asignado
+                FROM requests r
+                LEFT JOIN employees e ON r.employee_id = e.employee_id       -- Obtener empleado
+                LEFT JOIN employees s ON r.supervisor_id = s.employee_id     -- Obtener supervisor
+                LEFT JOIN departments d ON r.department_id = d.department_id
+                LEFT JOIN warnings w ON r.warning_id = w.warning_id
+                LEFT JOIN status st ON r.status_id = st.status_id
+                LEFT JOIN reasons rs ON r.reason_id = rs.reason_id
+                LEFT JOIN users us ON r.user_id = us.user_id                 -- Obtener el usuario asignado
+                LEFT JOIN employees u ON us.employee_id = u.employee_id      -- Obtener el nombre completo del encargado de la solicitud
+                WHERE r.request_id = ?;
+                """, (request_id,)
+            )
             data = cur.fetchone()
-            return data
+            if data:
+                return {
+                    "request_id": data[0],
+                    "supervisor_id": data[1],
+                    "employee_id": data[2],
+                    "department_id": data[3],
+                    "warning_id": data[4],
+                    "reason_id": data[5],
+                    "notes": data[6],
+                    "status_id": data[7],
+                    "requestdate": data[8],
+                    "user_id": data[9],
+                    "updatedate": data[10],
+                    "supervisor_name": data[11],
+                    "employee_name": data[12],
+                    "department": data[13],
+                    "warning": data[14],
+                    "reason": data[15],
+                    "status": data[16],
+                    "assigned_employee_name": data[17]
+                }
+            return None
         except sqlite3.Error as e:
             print(f"Error al obtener la solicitud: {e}")
             raise
         finally:
             conn.close()
 
-    # Actualizar una solicitud por su request_id
-    def update_request(
-        self,
-        request_id: int,
-        supervisor_id: int = None,
-        employee_id: int = None,
-        department_id: int = None,
-        warning_id: int = None,
-        status_id: int = None,
-        reason_id: int = None,
-        notes: str = None,
-        user_id: int = None,
-        requestdate: str = None,  # Formato: 'YYYY-MM-DD'
-    ):
-        conn = self._connect()
-        cur = conn.cursor()
+
+    def update_request(self, request_id: int, supervisor_id: int, employee_id: int, department_id: int,
+                   warning_id: int, reason_id: int, notes: str, status_id: int, requestdate: str):
+        conn = sqlite3.connect("./ocsrequest.db")
+        cursor = conn.cursor()
         try:
-            # Construir la consulta dinámicamente
-            query = "UPDATE requests SET "
-            params = []
-            if supervisor_id is not None:
-                query += "supervisor_id = ?, "
-                params.append(supervisor_id)
-            if employee_id is not None:
-                query += "employee_id = ?, "
-                params.append(employee_id)
-            if department_id is not None:
-                query += "department_id = ?, "
-                params.append(department_id)
-            if warning_id is not None:
-                query += "warning_id = ?, "
-                params.append(warning_id)
-            if status_id is not None:
-                query += "status_id = ?, "
-                params.append(status_id)
-            if reason_id is not None:
-                query += "reason_id = ?, "
-                params.append(reason_id)
-            if notes is not None:
-                query += "notes = ?, "
-                params.append(notes)
-            if user_id is not None:
-                query += "user_id = ?, "
-                params.append(user_id)
-            if requestdate is not None:
-                query += "requestdate = ?, "
-                params.append(requestdate)
+            # Agregar impresión para depuración
+            print(f"Updating request with ID {request_id}")
+            print(f"Received status_id: {status_id}")
 
-            # Eliminar la última coma y agregar la condición WHERE
-            query = query.rstrip(", ") + " WHERE request_id = ?"
-            params.append(request_id)
+            # Actualizar los datos de la solicitud
+            cursor.execute("""
+                UPDATE requests
+                SET supervisor_id = ?, employee_id = ?, department_id = ?, warning_id = ?, reason_id = ?,
+                    notes = ?, status_id = ?, requestdate = ?
+                WHERE request_id = ?
+            """, (supervisor_id, employee_id, department_id, warning_id, reason_id, notes, status_id, requestdate, request_id))
 
-            # Ejecutar la consulta
-            cur.execute(query, tuple(params))
             conn.commit()
+
         except sqlite3.Error as e:
-            print(f"Error al actualizar la solicitud: {e}")
-            raise
+            raise Exception(f"Error al actualizar la solicitud: {e}")
         finally:
             conn.close()
+
+
+
 
     # Eliminar una solicitud por su request_id
     def delete_request(self, request_id: int):
@@ -343,7 +360,7 @@ class HandleDB():
         finally:
             conn.close()
             
-    def update_employee(self, employee_id, firstname, lastname, position_id, branch_id, modality_id,  department_id, active):
+    def update_employee(self, employee_id, firstname, lastname, position_id, branch_id, modality_id, hiredate, department_id, active):
         conn = sqlite3.connect("./ocsrequest.db")
         cursor = conn.cursor()
         try:
@@ -353,9 +370,9 @@ class HandleDB():
 
             cursor.execute("""
                 UPDATE employees
-                SET firstname = ?, lastname = ?, position_id = ?, branch_id = ?, modality_id = ?, active = ?
+                SET firstname = ?, lastname = ?, position_id = ?, branch_id = ?, modality_id = ?, hiredate = ?, active = ?
                 WHERE employee_id = ?
-            """, (firstname, lastname, position_id, branch_id, modality_id,  int(active), employee_id))
+            """, (firstname, lastname, position_id, branch_id, modality_id, hiredate, int(active), employee_id))
 
             conn.commit()
 

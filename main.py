@@ -79,7 +79,8 @@ def logout():
     response.delete_cookie(key="username")  # Eliminar la cookie de sesión
     return response
     
-#-------------------Create Request-----------------------------------------------------------------------------------------------------------------------------------------------------------------------   
+
+#-------------------Request-----------------------------------------------------------------------------------------------------------------------------------------------------------------------   
 @app.get('/request', response_class=HTMLResponse)
 def show_request_form(req: Request, username: str = Depends(get_current_user)):
     # Obtener el employee_id del usuario que inició sesión
@@ -153,8 +154,84 @@ def submit_request(
             detail=f"Error al guardar la solicitud: {e}",
         )
 
-        
-#-----------------------------Add Employee -----------------------------------------------------------------------------------------------------------------------------------------------
+@app.get("/editRequest/{request_id}", response_class=HTMLResponse)
+def edit_request(req: Request, request_id: int, username: str = Depends(get_current_user)):
+    db = HandleDB()  # Asegúrate de que HandleDB esté inicializado correctamente
+    request_data = db.get_request_by_id(request_id)
+
+    # Obtener el 'department_id' de la solicitud
+    department_id = request_data.get("department_id")  # Esto es lo que necesitas
+
+    # Usar el 'department_id' para obtener los empleados de ese departamento
+    employees = db.get_employees_by_department(department_id)  # Pasar 'department_id'
+
+    # Obtener otras consultas relacionadas
+    get_departments_by_employee = db.get_departments_by_employee()
+    supervisor = db.get_supervisor_for_current_user(username)
+    requests = db.get_all_requests()
+    users = db.get_all()
+    warnings = db.get_all_warnings()
+    status = db.get_all_status()
+    reasons = db.get_all_reasons()
+
+    if not request_data:
+        raise HTTPException(status_code=404, detail="Solicitud no encontrada")
+
+    # Pasar los datos a la plantilla
+    return template.TemplateResponse(
+        'editRequest.html',
+        {
+            'request': req,
+            'request_data': request_data,
+            'username': username,
+            'users': users, 
+            'employees': employees,  # Ahora pasas los empleados filtrados por departamento
+            'get_departments_by_employee': get_departments_by_employee,
+            'supervisor_id': supervisor["employee_id"] if supervisor else None,
+            'supervisor_name': supervisor["name"] if supervisor else None,
+            'warnings': warnings, 
+            'status': status, 
+            'reasons': reasons
+        }
+    )
+
+
+    
+@app.post("/updateRequest/{request_id}", response_class=HTMLResponse)
+def update_request(
+        req: Request,
+        request_id: int,
+        supervisor_id: int = Form(...),
+        employee_id: int = Form(...),
+        department_id: int = Form(...),
+        warning_id: int = Form(...),
+        reason_id: int = Form(...),
+        notes: str = Form(...),
+        status_id: int = Form(...),
+        requestdate: str = Form(...)
+):
+    try:
+        # Actualizar los datos de la solicitud en la base de datos
+        db.update_request(
+            request_id=request_id,
+            supervisor_id=supervisor_id,
+            employee_id=employee_id,
+            department_id=department_id,
+            warning_id=warning_id,
+            reason_id=reason_id,
+            notes=notes,
+            status_id=status_id,
+            requestdate=requestdate
+        )
+        # Redirigir a la página de solicitudes después de la actualización
+        return RedirectResponse(url="/requests", status_code=303)
+    
+    except Exception as e:
+        # Manejo de errores: muestra el error en caso de falla
+        return HTMLResponse(content=f"Error al actualizar la solicitud: {e}", status_code=500)
+
+
+#-----------------------------Employee -----------------------------------------------------------------------------------------------------------------------------------------------
 @app.get("/addEmployee", response_class=HTMLResponse)
 def show_employee_form(req: Request):
     # Verificar si el usuario ha iniciado sesión
@@ -265,7 +342,7 @@ def update_employee(
         position_id: int = Form(...),
         branch_id: int = Form(...),
         modality_id: int = Form(...),
-        #hiredate: str = Form(...),
+        hiredate: str = Form(...),
         department_id: int = Form(...),
         active: int = Form(...)
 ):
@@ -278,7 +355,7 @@ def update_employee(
             position_id=position_id,
             branch_id=branch_id,
             modality_id=modality_id,
-            #hiredate=hiredate,
+            hiredate=hiredate,
             department_id=department_id,
             active=active
         )
