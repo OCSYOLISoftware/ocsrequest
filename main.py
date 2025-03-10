@@ -158,15 +158,20 @@ def submit_request(
 def edit_request(req: Request, request_id: int, username: str = Depends(get_current_user)):
     db = HandleDB()  # Asegúrate de que HandleDB esté inicializado correctamente
     request_data = db.get_request_by_id(request_id)
+    user_data = db.get_only(username)
+    if not user_data:
+        return HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    employee_id = user_data[1] 
 
     # Obtener el 'department_id' de la solicitud
-    department_id = request_data.get("department_id")  # Esto es lo que necesitas
+    department_id = request_data.get("department_id") 
 
     # Usar el 'department_id' para obtener los empleados de ese departamento
-    employees = db.get_employees_by_department(department_id)  # Pasar 'department_id'
+    employees = db.get_employees_by_department(department_id) 
 
     # Obtener otras consultas relacionadas
-    get_departments_by_employee = db.get_departments_by_employee()
+    get_departments_by_employee = db.get_departments_by_employee(employee_id)
     supervisor = db.get_supervisor_for_current_user(username)
     requests = db.get_all_requests()
     users = db.get_all()
@@ -194,8 +199,6 @@ def edit_request(req: Request, request_id: int, username: str = Depends(get_curr
             'reasons': reasons
         }
     )
-
-
     
 @app.post("/updateRequest/{request_id}", response_class=HTMLResponse)
 def update_request(

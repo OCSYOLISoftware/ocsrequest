@@ -32,7 +32,7 @@ class HandleDB():
     def get_employee_id_by_username(self, username: str):
         user_data = self.get_only(username)
         if user_data:
-            return user_data[2]  # Suponiendo que employee_id es la tercera columna
+            return user_data[2]  
         return None
     
     def insert(self, data_user):
@@ -364,31 +364,43 @@ class HandleDB():
         conn = sqlite3.connect("./ocsrequest.db")
         cursor = conn.cursor()
         try:
-            # Agregar impresión para depuración
             print(f"Updating employee with ID {employee_id}")
             print(f"Received active status: {active}")
 
+            # Actualizar los datos del empleado
             cursor.execute("""
                 UPDATE employees
                 SET firstname = ?, lastname = ?, position_id = ?, branch_id = ?, modality_id = ?, hiredate = ?, active = ?
                 WHERE employee_id = ?
             """, (firstname, lastname, position_id, branch_id, modality_id, hiredate, int(active), employee_id))
-
             conn.commit()
 
-            # Actualizar la relación con department
+            # Verificar si ya existe la relación exacta employee_id - department_id
             cursor.execute("""
-                UPDATE employee_departments
-                SET department_id = ?
-                WHERE employee_id = ?
-            """, (department_id, employee_id))
+                SELECT 1 FROM employee_departments WHERE employee_id = ? AND department_id = ?
+            """, (employee_id, department_id))
+            existing_relation = cursor.fetchone()
 
-            conn.commit()
+            if not existing_relation:
+                # Primero eliminamos cualquier relación previa para evitar duplicados
+                cursor.execute("""
+                    DELETE FROM employee_departments WHERE employee_id = ?
+                """, (employee_id,))
+                conn.commit()
+
+                # Ahora insertamos la nueva relación
+                cursor.execute("""
+                    INSERT INTO employee_departments (employee_id, department_id)
+                    VALUES (?, ?)
+                """, (employee_id, department_id))
+                conn.commit()
 
         except sqlite3.Error as e:
             raise Exception(f"Error al actualizar el empleado: {e}")
         finally:
             conn.close()
+
+
 
 
 

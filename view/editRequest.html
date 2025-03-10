@@ -69,8 +69,8 @@
     </div>
 
     <div class="col-md-4">
-        <label for="requestdate" class="form-label">Request Date:</label>
-        <input type="date" name="requestdate" value="{{ request_data['requestdate'] }}" class="form-control" required>
+        <label for="notes" class="form-label">Handle by:
+        <input type="text" name="notes" value="{{ request_data['assigned_employee_name'] }}" class="form-control" required>
     </div>
 
     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
