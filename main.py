@@ -248,6 +248,7 @@ def show_employee_form(req: Request):
     positions = db.get_all_positions()
     branches = db.get_all_branches()
     modalities = db.get_all_modalities()
+    employee_status = db.get_all_employee_status()
     
     return template.TemplateResponse(
         "addEmployee.html",
@@ -258,7 +259,8 @@ def show_employee_form(req: Request):
             'positions': positions,
             'branches': branches,
             'modalities': modalities,
-            "username": username
+            "username": username,
+            "employee_status": employee_status
         }
     )
 
@@ -272,7 +274,8 @@ def add_employee(
         branch_id: int = Form(...),    # ID del branch
         modality_id: int = Form(...),  # ID de modalidad
         hiredate: str = Form(...),     # Fecha de contratación (formato 'YYYY-MM-DD')
-        department_id: int = Form(...)  # ID del departamento 
+        department_id: int = Form(...),  # ID del departamento 
+        status_id: int = Form(...)  # ID del departamento 
 ):
     try:
         # Insertar los datos en la tabla employees
@@ -283,7 +286,8 @@ def add_employee(
             position_id=position_id,
             branch_id=branch_id,
             modality_id=modality_id,
-            hiredate=hiredate
+            hiredate=hiredate,
+            status_id=status_id
         )
 
         # Insertar los datos en la tabla employee_departments
@@ -321,6 +325,7 @@ def edit_employee(req: Request, employee_id: int):
     positions = db.get_all_positions()
     branches = db.get_all_branches()
     modalities = db.get_all_modalities()
+    employee_status = db.get_all_employee_status()
 
     return template.TemplateResponse(
         "editEmployee.html",
@@ -332,7 +337,8 @@ def edit_employee(req: Request, employee_id: int):
             "positions": positions,
             "branches": branches,
             "modalities": modalities,
-            "username": username
+            "username": username,
+            "employee_status": employee_status
         }
     )
     
@@ -347,7 +353,7 @@ def update_employee(
         modality_id: int = Form(...),
         hiredate: str = Form(...),
         department_id: int = Form(...),
-        active: int = Form(...)
+        status_id: int = Form(...)
 ):
     try:
         # Actualizar los datos del empleado en la base de datos
@@ -360,7 +366,7 @@ def update_employee(
             modality_id=modality_id,
             hiredate=hiredate,
             department_id=department_id,
-            active=active
+            status_id=status_id
         )
 
         # Actualizar el departamento del empleado

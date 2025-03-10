@@ -249,10 +249,11 @@ class HandleDB():
         position_id: int,
         hiredate: str,
         branch_id: int,
-        modality_id: int
+        modality_id: int,
+        status_id: int  # Añadir status_id como parámetro
     ):
         """
-        Inserta una nueva solicitud en la tabla employee.
+        Inserta un nuevo empleado en la tabla employees.
         """
         conn = self._connect()
         cur = conn.cursor()
@@ -261,19 +262,20 @@ class HandleDB():
                 """
                 INSERT INTO employees (
                     employee_id, firstname, lastname, position_id,
-                    hiredate, branch_id, modality_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    hiredate, branch_id, modality_id, status_id  -- Añadir status_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
-                    employee_id, firstname, lastname, position_id, hiredate, branch_id, modality_id
+                    employee_id, firstname, lastname, position_id, hiredate, branch_id, modality_id, status_id
                 ),
             )
             conn.commit()
         except sqlite3.Error as e:
-            print(f"Error al insertar la solicitud: {e}")
+            print(f"Error al insertar el empleado: {e}")
             raise
         finally:
             conn.close()
+
             
         # Leer todas los empleados
     def get_all_employees(self):
@@ -292,29 +294,26 @@ class HandleDB():
                     m.modality AS modality,
                     STRFTIME('%m-%d-%Y', e.hiredate) AS hiredate, 
                     e.update_date,
-                    CASE 
-                        WHEN e.active = 1 THEN 'Active'
-                        WHEN e.active = 2 THEN 'Inactive'
-                        ELSE 'Unknown'
-                    END AS active_status
+                    es.status AS active_status  -- Cambiar a 'status' de la tabla 'employee_status'
                 FROM employees e
                 LEFT JOIN positions p ON e.position_id = p.position_id
                 LEFT JOIN branches b ON e.branch_id = b.branch_id
                 LEFT JOIN modalities m ON e.modality_id = m.modality_id
                 LEFT JOIN employee_departments ed ON e.employee_id = ed.employee_id 
                 LEFT JOIN departments d ON ed.department_id = d.department_id
-                GROUP BY e.employee_id, e.firstname, e.lastname, p.position, b.branch, m.modality, e.hiredate, e.update_date, e.active;
-  
+                LEFT JOIN employee_status es ON e.status_id = es.status_id  -- Relación con employee_status
+                GROUP BY e.employee_id, e.firstname, e.lastname, p.position, b.branch, m.modality, e.hiredate, e.update_date, es.status;
                 """
             )
             data = cur.fetchall()
             print("Datos obtenidos:", data)  # Depuración
             return data
         except sqlite3.Error as e:
-            print(f"Error al obtener las solicitudes: {e}")
+            print(f"Error al obtener los empleados: {e}")
             raise
         finally:
             conn.close()
+
             
     def get_employee_by_id(self, employee_id: int):
         conn = self._connect()
@@ -326,13 +325,15 @@ class HandleDB():
                     p.position_id, p.position,  
                     b.branch_id, b.branch,  
                     m.modality_id, m.modality,
-                    ed.department_id, d.department
+                    ed.department_id, d.department,
+                    e.status_id, es.status  -- Incluir status_id y status
                 FROM employees e
                 LEFT JOIN positions p ON e.position_id = p.position_id
                 LEFT JOIN branches b ON e.branch_id = b.branch_id
                 LEFT JOIN modalities m ON e.modality_id = m.modality_id
                 LEFT JOIN employee_departments ed ON e.employee_id = ed.employee_id
                 LEFT JOIN departments d ON ed.department_id = d.department_id
+                LEFT JOIN employee_status es ON e.status_id = es.status_id  -- Relación con employee_status
                 WHERE e.employee_id = ?;
                 """,
                 (employee_id,),
@@ -352,6 +353,8 @@ class HandleDB():
                     "modality": data[9],
                     "department_id": data[10],
                     "department": data[11],
+                    "status_id": data[12],  # Incluir el status_id
+                    "status": data[13],  # Incluir el nombre del status
                 }
             return None
         except sqlite3.Error as e:
@@ -359,20 +362,25 @@ class HandleDB():
             raise
         finally:
             conn.close()
+
             
-    def update_employee(self, employee_id, firstname, lastname, position_id, branch_id, modality_id, hiredate, department_id, active):
+    def update_employee(self, employee_id, firstname, lastname, position_id, branch_id, modality_id, hiredate, department_id, status_id):
         conn = sqlite3.connect("./ocsrequest.db")
         cursor = conn.cursor()
         try:
             print(f"Updating employee with ID {employee_id}")
-            print(f"Received active status: {active}")
+            print(f"Received status_id: {status_id}")
+
+            # Validar si el status_id es válido (por ejemplo, entre 1 y 2 si son los únicos valores)
+            if status_id not in [1, 2]:
+                raise ValueError(f"Invalid status_id value: {status_id}")
 
             # Actualizar los datos del empleado
             cursor.execute("""
                 UPDATE employees
-                SET firstname = ?, lastname = ?, position_id = ?, branch_id = ?, modality_id = ?, hiredate = ?, active = ?
+                SET firstname = ?, lastname = ?, position_id = ?, branch_id = ?, modality_id = ?, hiredate = ?, status_id = ?
                 WHERE employee_id = ?
-            """, (firstname, lastname, position_id, branch_id, modality_id, hiredate, int(active), employee_id))
+            """, (firstname, lastname, position_id, branch_id, modality_id, hiredate, status_id, employee_id))
             conn.commit()
 
             # Verificar si ya existe la relación exacta employee_id - department_id
@@ -399,6 +407,7 @@ class HandleDB():
             raise Exception(f"Error al actualizar el empleado: {e}")
         finally:
             conn.close()
+
 
 
 
@@ -487,6 +496,16 @@ class HandleDB():
                 return warnings
         except sqlite3.Error as e:
             print(f"Error al obtener todas los warnings: {e}")
+            
+    def get_all_employee_status(self):
+        try:
+            with self._connect() as conn:
+                cur = conn.cursor()
+                cur.execute("SELECT status_id, status FROM employee_status")
+                employee_status = [{"status_id": row[0], "status": row[1]} for row in cur.fetchall()]
+                return employee_status
+        except sqlite3.Error as e:
+            print(f"Error al obtener todos los status: {e}")
 
     def get_all_status(self):
         conn = self._connect()

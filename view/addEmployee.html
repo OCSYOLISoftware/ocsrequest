@@ -60,6 +60,15 @@
         </select>
     </div>
     <div class="col-md-4">
+        <label for="status_id" class="form-label">Status:</label>
+        <select name="status_id" class="form-select" required>
+            <option value="">Select Position</option>
+            {% for emp_status in employee_status %}
+                <option value="{{ emp_status['status_id'] }}">{{ emp_status['status'] }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
         <label for="hiredate" class="form-label">Hire Date</label>
         <input type="date" name="hiredate" class="form-control" id="hiredate" required>
     </div>
