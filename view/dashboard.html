@@ -3,48 +3,44 @@
 {% block title %}Dashboard{% endblock%}
 
 {% block content %}
-<div class="row m-md-5 ">
+<div class="row m-md-5 m-3">
     <H1>Dashboard</H1>
 </div>
 
-<div class="row m-md-5 m-3">
+<div class="col-md-4">
 
     <h3>Request status</h3>
-    <div class="progress" style="height: 40px;">
+    <div class="progress">
         <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" 
             aria-label="Open Requests" 
             aria-valuenow="{{ open_percentage }}" 
             aria-valuemin="0" 
-            aria-valuemax="100" 
-            style="width: {{ open_percentage }}%;">
+            aria-valuemax="100">
             Open: {{ open_percentage | round(1) }}%
         </div>
     </div>
-    
-    <div class="progress" style="height: 40px;">
+
+    <div class="progress">
         <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
             role="progressbar" 
             aria-label="In Progress Requests" 
+            width:="{{ in_}}"
             aria-valuenow="{{ in_progress_percentage }}" 
             aria-valuemin="0" 
-            aria-valuemax="100" 
-            style="width: {{ in_progress_percentage }}%;">
+            aria-valuemax="100">
             In Progress: {{ in_progress_percentage | round(1) }}%
         </div>
     </div>
-    
-    <div class="progress" style="height: 40px;">
-        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+
+    <div class="progress">
+        <div class="progress-bar progress-bar-striped progress-bar-animated progress-bar-striped bg-success" 
             role="progressbar" 
             aria-label="Closed Requests" 
-            aria-valuenow="{{ closed_percentage }}" 
             aria-valuemin="0" 
-            aria-valuemax="100" 
-            style="width: {{ closed_percentage }}%;">
+            aria-valuemax="100">
             Closed: {{ closed_percentage | round(1) }}%
         </div>
     </div>
-    
 </div>
 
 
