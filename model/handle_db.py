@@ -673,3 +673,42 @@ class HandleDB():
         except sqlite3.Error as e:
             print(f"Error al obtener el supervisor: {e}")
             raise
+#--------------------Prueba de barras de colores--------------------------------------
+    def get_request_status_counts(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("""
+                SELECT status_id, COUNT(*) 
+                FROM requests 
+                GROUP BY status_id;
+            """)
+            data = cur.fetchall()
+            return {status_id: count for status_id, count in data}
+        except sqlite3.Error as e:
+            print(f"Error al obtener los estados de las solicitudes: {e}")
+            raise
+        finally:
+            conn.close()
+
+    def calculate_status_percentages(self):
+        status_counts = self.get_request_status_counts()
+        total_requests = sum(status_counts.values())  # Total de todas las solicitudes
+
+        if total_requests == 0:
+            return {
+                "open_percentage": 0,
+                "in_progress_percentage": 0,
+                "closed_percentage": 0,
+            }
+
+        # Suponiendo que el status_id de Open es 1, In Progress es 2, y Closed es 3
+        open_percentage = (status_counts.get(1, 0) / total_requests) * 100
+        in_progress_percentage = (status_counts.get(2, 0) / total_requests) * 100
+        closed_percentage = (status_counts.get(3, 0) / total_requests) * 100
+
+        return {
+            "open_percentage": open_percentage,
+            "in_progress_percentage": in_progress_percentage,
+            "closed_percentage": closed_percentage,
+        }

@@ -63,12 +63,17 @@ def get_dashboard(req: Request):
     if not username:
         return RedirectResponse(url='/', status_code=303)
 
+    percentages = db.calculate_status_percentages()#test
+    
     # Pasar los requests a la plantilla
     return template.TemplateResponse(
         'dashboard.html',
         {
             'request': req, 
-            "username": username
+            "username": username,
+            "open_percentage": percentages["open_percentage"], #test
+            "in_progress_percentage": percentages["in_progress_percentage"],#test
+            "closed_percentage": percentages["closed_percentage"],#test
         }
     )
     

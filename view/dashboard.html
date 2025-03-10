@@ -3,10 +3,49 @@
 {% block title %}Dashboard{% endblock%}
 
 {% block content %}
-<div class="row m-md-5 m-3">
+<div class="row m-md-5 ">
     <H1>Dashboard</H1>
 </div>
 
+<div class="row m-md-5 m-3">
+
+    <h3>Request status</h3>
+    <div class="progress" style="height: 40px;">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" 
+            aria-label="Open Requests" 
+            aria-valuenow="{{ open_percentage }}" 
+            aria-valuemin="0" 
+            aria-valuemax="100" 
+            style="width: {{ open_percentage }}%;">
+            Open: {{ open_percentage | round(1) }}%
+        </div>
+    </div>
+    
+    <div class="progress" style="height: 40px;">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
+            role="progressbar" 
+            aria-label="In Progress Requests" 
+            aria-valuenow="{{ in_progress_percentage }}" 
+            aria-valuemin="0" 
+            aria-valuemax="100" 
+            style="width: {{ in_progress_percentage }}%;">
+            In Progress: {{ in_progress_percentage | round(1) }}%
+        </div>
+    </div>
+    
+    <div class="progress" style="height: 40px;">
+        <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+            role="progressbar" 
+            aria-label="Closed Requests" 
+            aria-valuenow="{{ closed_percentage }}" 
+            aria-valuemin="0" 
+            aria-valuemax="100" 
+            style="width: {{ closed_percentage }}%;">
+            Closed: {{ closed_percentage | round(1) }}%
+        </div>
+    </div>
+    
+</div>
 
 
 {% endblock %}
