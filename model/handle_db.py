@@ -308,7 +308,7 @@ class HandleDB():
                 """
             )
             data = cur.fetchall()
-            print("Datos obtenidos:", data)  # Depuración
+            #print("Datos obtenidos:", data) 
             return data
         except sqlite3.Error as e:
             print(f"Error al obtener los empleados: {e}")
@@ -722,9 +722,9 @@ class HandleDB():
             cur.execute("""
                 SELECT 
                     COUNT(*) AS total,
-                    SUM(CASE WHEN m.modality = 'Site' THEN 1 ELSE 0 END) AS site,
-                    SUM(CASE WHEN m.modality = 'Home Office' THEN 1 ELSE 0 END) AS home_office,
-                    SUM(CASE WHEN m.modality = 'Hybrid' THEN 1 ELSE 0 END) AS hybrid
+                    SUM(CASE WHEN m.modality_id = 1 THEN 1 ELSE 0 END) AS site,
+                    SUM(CASE WHEN m.modality_id = 2 THEN 1 ELSE 0 END) AS home_office,
+                    SUM(CASE WHEN m.modality_id = 3 THEN 1 ELSE 0 END) AS hybrid
                 FROM employees e
                 LEFT JOIN modalities m ON e.modality_id = m.modality_id
                 LEFT JOIN employee_status es ON e.status_id = es.status_id
