@@ -7,41 +7,117 @@
     <H1>Dashboard</H1>
 </div>
 
-<div class="col-md-4">
+<div class="container mt-4">
+    <div class="row g-4">
+        <!-- Sección de Request Status -->
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <h4 class="card-title text-center mb-4">Request Status</h4>
 
-    <h3>Request status</h3>
-    <div class="progress">
-        <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" 
-            aria-label="Open Requests" 
-            aria-valuenow="{{ open_percentage }}" 
-            aria-valuemin="0" 
-            aria-valuemax="100">
-            Open: {{ open_percentage | round(1) }}%
+                    <!-- Open Requests -->
+                    <div class="mb-3">
+                        <span class="fw-bold">Open Requests</span>
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" 
+                                role="progressbar" 
+                                aria-valuenow="{{ open_percentage }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100" 
+                                style="width: {{ open_percentage }}%;">
+                                {{ open_percentage | round(1) }}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- In Progress Requests -->
+                    <div class="mb-3">
+                        <span class="fw-bold">In Progress Requests</span>
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
+                                role="progressbar" 
+                                aria-valuenow="{{ in_progress_percentage }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100" 
+                                style="width: {{ in_progress_percentage }}%;">
+                                {{ in_progress_percentage | round(1) }}%
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Closed Requests -->
+                    <div class="mb-3">
+                        <span class="fw-bold">Closed Requests</span>
+                        <div class="progress" style="height: 30px;">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" 
+                                role="progressbar" 
+                                aria-valuenow="{{ closed_percentage }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100" 
+                                style="width: {{ closed_percentage }}%;">
+                                {{ closed_percentage | round(1) }}%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <div class="progress">
-        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
-            role="progressbar" 
-            aria-label="In Progress Requests" 
-            width:="{{ in_}}"
-            aria-valuenow="{{ in_progress_percentage }}" 
-            aria-valuemin="0" 
-            aria-valuemax="100">
-            In Progress: {{ in_progress_percentage | round(1) }}%
-        </div>
-    </div>
+        <!-- Sección de Employee Counts -->
+        <div class="col-md-6">
+            <div class="row g-3">
+                <!-- Total Employees -->
+                <div class="col-md-6">
+                    <div class="card text-white bg-primary shadow-lg">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-people-fill me-2"></i> Total Employees
+                        </div>
+                        <div class="card-body text-center">
+                            <h4 class="card-title">{{ employee_counts.total }}</h4>
+                        </div>
+                    </div>
+                </div>
 
-    <div class="progress">
-        <div class="progress-bar progress-bar-striped progress-bar-animated progress-bar-striped bg-success" 
-            role="progressbar" 
-            aria-label="Closed Requests" 
-            aria-valuemin="0" 
-            aria-valuemax="100">
-            Closed: {{ closed_percentage | round(1) }}%
+                <!-- Site Modality -->
+                <div class="col-md-6">
+                    <div class="card text-white bg-success shadow-lg">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-building me-2"></i> Site
+                        </div>
+                        <div class="card-body text-center">
+                            <h4 class="card-title">{{ employee_counts.site }}</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Home Office Modality -->
+                <div class="col-md-6">
+                    <div class="card text-white bg-warning shadow-lg">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-house-door-fill me-2"></i> Home Office
+                        </div>
+                        <div class="card-body text-center">
+                            <h4 class="card-title">{{ employee_counts.home_office }}</h4>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hybrid Modality -->
+                <div class="col-md-6">
+                    <div class="card text-white bg-info shadow-lg">
+                        <div class="card-header d-flex align-items-center">
+                            <i class="bi bi-laptop me-2"></i> Hybrid
+                        </div>
+                        <div class="card-body text-center">
+                            <h4 class="card-title">{{ employee_counts.hybrid }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
 
 
 {% endblock %}

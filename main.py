@@ -64,6 +64,7 @@ def get_dashboard(req: Request):
         return RedirectResponse(url='/', status_code=303)
 
     percentages = db.calculate_status_percentages()#test
+    employee_counts = db.get_employee_counts()
     
     # Pasar los requests a la plantilla
     return template.TemplateResponse(
@@ -74,6 +75,7 @@ def get_dashboard(req: Request):
             "open_percentage": percentages["open_percentage"], #test
             "in_progress_percentage": percentages["in_progress_percentage"],#test
             "closed_percentage": percentages["closed_percentage"],#test
+            "employee_counts": employee_counts
         }
     )
     
@@ -95,13 +97,21 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
         return HTTPException(status_code=404, detail="Usuario no encontrado")
 
     employee_id = user_data[1] 
+    
+    #Obtener supervisor
+    supervisor = db.get_supervisor_for_current_user(username)
+    if not supervisor:
+        raise HTTPException(status_code=404, detail="Supervisor ni encontrado")
+    
+    #aqui se define el supervisor
+    supervisor_id = supervisor["employee_id"]
 
     # Joins
     employees = db.get_employees_by_department(employee_id)
     get_departments_by_employee = db.get_departments_by_employee(employee_id)
     supervisor = db.get_supervisor_for_current_user(username)
     # Obtener los datos de las tablas relacionadas
-    requests = db.get_all_requests()
+    requests = db.get_all_requests(supervisor_id)
     users = db.get_all()
     warnings = db.get_all_warnings()
     status = db.get_all_status()

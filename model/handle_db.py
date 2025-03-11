@@ -94,7 +94,7 @@ class HandleDB():
             conn.close()
             
         # Leer todas las solicitudes
-    def get_all_requests(self):
+    def get_all_requests(self, supervisor_id):
         conn = self._connect()
         cur = conn.cursor()
         try:
@@ -102,26 +102,28 @@ class HandleDB():
                 """
                 SELECT 
                     r.request_id, 
-                    s.firstname || ' ' || s.lastname AS supervisor_name, -- Nombre completo del supervisor
-                    e.employee_id || ' - ' || e.firstname || ' ' || e.lastname AS employee_name,  -- Nombre completo del empleado
+                    s.firstname || ' ' || s.lastname AS supervisor_name, 
+                    e.employee_id || ' - ' || e.firstname || ' ' || e.lastname AS employee_name,  
                     d.department AS department,
                     w.warning AS warning,
                     rs.reason AS reason,
                     r.notes,
                     st.status AS status,
                     r.requestdate,
-                    u.firstname || ' ' || u.lastname AS assigned_employee_name, -- Nombre completo de la persona que se hará cargo
+                    u.firstname || ' ' || u.lastname AS assigned_employee_name, 
                     r.updatedate
                 FROM requests r
-                LEFT JOIN employees e ON r.employee_id = e.employee_id       -- Obtener empleado
-                LEFT JOIN employees s ON r.supervisor_id = s.employee_id     -- Obtener supervisor
+                LEFT JOIN employees e ON r.employee_id = e.employee_id       
+                LEFT JOIN employees s ON r.supervisor_id = s.employee_id     
                 LEFT JOIN departments d ON r.department_id = d.department_id
                 LEFT JOIN warnings w ON r.warning_id = w.warning_id
                 LEFT JOIN status st ON r.status_id = st.status_id
                 LEFT JOIN reasons rs ON r.reason_id = rs.reason_id
-                LEFT JOIN users us ON r.user_id = us.user_id                 -- Obtener el usuario que se hará cargo
-                LEFT JOIN employees u ON us.employee_id = u.employee_id;     -- Obtener el nombre completo del encargado de la solicitud
-                """
+                LEFT JOIN users us ON r.user_id = us.user_id                 
+                LEFT JOIN employees u ON us.employee_id = u.employee_id    
+                WHERE r.supervisor_id = :supervisor_id;
+                """,
+                {"supervisor_id": supervisor_id}  # <--- Aquí pasamos el parámetro
             )
             data = cur.fetchall()
             return data
@@ -712,3 +714,31 @@ class HandleDB():
             "in_progress_percentage": in_progress_percentage,
             "closed_percentage": closed_percentage,
         }
+#--------------------Prueba de conteo de empleados y modalidad--------------------------------------
+    def get_employee_counts(self):
+        conn = self._connect()
+        cur = conn.cursor()
+        try:
+            cur.execute("""
+                SELECT 
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN m.modality = 'Site' THEN 1 ELSE 0 END) AS site,
+                    SUM(CASE WHEN m.modality = 'Home Office' THEN 1 ELSE 0 END) AS home_office,
+                    SUM(CASE WHEN m.modality = 'Hybrid' THEN 1 ELSE 0 END) AS hybrid
+                FROM employees e
+                LEFT JOIN modalities m ON e.modality_id = m.modality_id
+                LEFT JOIN employee_status es ON e.status_id = es.status_id
+                WHERE es.status_id = 1; -- Filtrar solo empleados activos (status_id = 1)
+            """)
+            data = cur.fetchone()
+            return {
+                "total": data[0],
+                "site": data[1],
+                "home_office": data[2],
+                "hybrid": data[3]
+            }
+        except sqlite3.Error as e:
+            print(f"Error al obtener el conteo de empleados: {e}")
+            return None
+        finally:
+            conn.close()
