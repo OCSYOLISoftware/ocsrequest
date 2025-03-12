@@ -367,7 +367,7 @@ class HandleDB():
 
             
     def update_employee(self, employee_id, firstname, lastname, position_id, branch_id, modality_id, hiredate, department_id, status_id):
-        conn = sqlite3.connect("./ocsrequest.db")
+        conn = self._connect()
         cursor = conn.cursor()
         try:
             print(f"Updating employee with ID {employee_id}")

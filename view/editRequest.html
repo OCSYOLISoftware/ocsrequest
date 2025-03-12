@@ -8,23 +8,24 @@
 </div>
 
 <form method="POST" action="/updateRequest/{{ request_data['request_id'] }}" class="row g-3 mx-sm-5 mx-2">
+
     <div class="col-md-4">
-        <label for="employee_id" class="form-label">Employee:</label>
-        <select name="employee_id" class="form-select" required>
-            {% for employee in employees %}
-                <option value="{{ employee['employee_id'] }}" {% if employee['employee_id'] == request_data['employee_id'] %}selected{% endif %}>
-                    {{ employee['firstname'] }} {{ employee['lastname'] }}
+        <label for="supervisor_id" class="form-label">Supervisor:</label>
+        <select name="supervisor_id" class="form-select" required>
+            {% for supervisor in supervisors %}
+                <option value="{{ supervisor['supervisor_id'] }}" {% if supervisor['supervisor_id'] == request_data['supervisor_id'] %}selected{% endif %}>
+                    {{ supervisor['firstname'] }} {{ supervisor['lastname'] }}
                 </option>
             {% endfor %}
         </select>
     </div>
 
     <div class="col-md-4">
-        <label for="supervisor_id" class="form-label">Supervisor:</label>
-        <select name="supervisor_id" class="form-select" required>
-            {% for supervisor in supervisors %}
-                <option value="{{ supervisor['employee_id'] }}" {% if supervisor['employee_id'] == request_data['supervisor_id'] %}selected{% endif %}>
-                    {{ supervisor['firstname'] }} {{ supervisor['lastname'] }}
+        <label for="employee_id" class="form-label">Employee:</label>
+        <select name="employee_id" class="form-select" required>
+            {% for employee in employees %}
+                <option value="{{ employee['employee_id'] }}" {% if employee['employee_id'] == request_data['employee_id'] %}selected{% endif %}>
+                    {{ employee['employee_name'] }}
                 </option>
             {% endfor %}
         </select>
@@ -58,6 +59,16 @@
             {% for reason in reasons %}
                 <option value="{{ reason['reason_id'] }}" {% if reason['reason_id'] == request_data['reason_id'] %}selected{% endif %}>
                     {{ reason['reason'] }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label for="status_id" class="form-label">Status:</label>
+        <select name="status_id" class="form-select" required>
+            {% for statusr in status %}
+                <option value="{{ statusr['status_id'] }}" {% if statusr['status_id'] == request_data['status_id'] %}selected{% endif %}>
+                    {{ statusr['status'] }}
                 </option>
             {% endfor %}
         </select>

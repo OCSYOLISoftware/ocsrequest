@@ -178,6 +178,8 @@ def edit_request(req: Request, request_id: int, username: str = Depends(get_curr
         return HTTPException(status_code=404, detail="Usuario no encontrado")
 
     employee_id = user_data[1] 
+    supervisor = db.get_supervisor_for_current_user(username)
+    supervisor_id = supervisor["employee_id"]
 
     # Obtener el 'department_id' de la solicitud
     department_id = request_data.get("department_id") 
@@ -188,7 +190,7 @@ def edit_request(req: Request, request_id: int, username: str = Depends(get_curr
     # Obtener otras consultas relacionadas
     get_departments_by_employee = db.get_departments_by_employee(employee_id)
     supervisor = db.get_supervisor_for_current_user(username)
-    requests = db.get_all_requests()
+    requests = db.get_all_requests(supervisor_id)
     users = db.get_all()
     warnings = db.get_all_warnings()
     status = db.get_all_status()
@@ -202,6 +204,7 @@ def edit_request(req: Request, request_id: int, username: str = Depends(get_curr
         'editRequest.html',
         {
             'request': req,
+            'requests': requests,
             'request_data': request_data,
             'username': username,
             'users': users, 
