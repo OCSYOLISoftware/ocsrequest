@@ -102,25 +102,26 @@
                 <th scope="col">Warning</th>
                 <th scope="col">Reason</th>
                 <th scope="col">Notes</th>
-                <th scope="col">Request Date</th>
-                <th scope="col">Update Date</th>
                 <th scope="col">Status</th>
+                <th scope="col">Requested Date</th>
+                <th scope="col">Handle By</th>
                 <th scope="col">Update</th>
             </tr>
         </thead>
         <tbody class="table-group-divider">
             {% for request in requests %}
             <tr>
-                <td>{{ request[0] }}</td>
-                <td>{{ request[2] }}</td>
-                <td>{{ request[1] }}</td>
-                <td>{{ request[3] }}</td>
-                <td>{{ request[4] }}</td>
-                <td>{{ request[5] }}</td>
-                <td>{{ request[6] }}</td>
-                <td>{{ request[7] }}</td>
-                <td>{{ request[8] }}</td>
-                <td>{{ request[9] }}</td>
+                <td>{{ request[0] }}</td>  <!-- request_id -->
+                <td>{{ request[1] }}</td>  <!-- supervisor -->
+                <td>{{ request[2] }}</td>  <!-- employee -->
+                <td>{{ request[3] }}</td>  <!-- department -->
+                <td>{{ request[4] }}</td>  <!-- warning -->
+                <td>{{ request[5] }}</td>  <!-- reason -->
+                <td>{{ request[6] }}</td>  <!-- notes -->
+                <td>{{ request[7] }}</td>  <!-- status -->
+                <td>{{ request[8] }}</td>  <!-- requestdate -->
+                <td>{{ request[9] }}</td>   <!-- User_id -->
+                <td>{{ request[10] }}</td>  <!-- Updated -->
                 <td>
                     <a href="/editRequest/{{ request[0] }}" class="btn btn-outline-warning">Update</a>
                 </td>
