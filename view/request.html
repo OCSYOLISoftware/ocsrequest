@@ -84,7 +84,7 @@
         <tbody class="table-group-divider">
             {% for request in requests %}
             <tr>
-                <td>{{ request[0] }}</td>  <!-- request_id -->
+                <td>{{ loop.index }}</td>  <!-- request_id -->
                 <td>{{ request[1] }}</td>  <!-- supervisor -->
                 <td>{{ request[2] }}</td>  <!-- employee -->
                 <td>{{ request[3] }}</td>  <!-- department -->

@@ -76,7 +76,8 @@
 
     <div class="col-md-4">
         <label for="notes" class="form-label">Notes:</label>
-        <input type="text" name="notes" value="{{ request_data['notes'] }}" class="form-control" required>
+        <textarea type="text" name="notes" class="form-control">{{ request_data['notes'] }}</textarea>
+        
     </div>
 
     <div class="col-md-4">
@@ -86,7 +87,7 @@
 
     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
         <button class="btn btn-outline-primary" type="submit">Update Request</button>
-        <button class="btn btn-outline-danger" type="button" onclick="window.location.href='/requests'">Cancel</button>
+        <button class="btn btn-outline-danger" type="button" onclick="window.location.href='/request'">Cancel</button>
     </div>
 </form>
 
@@ -103,7 +104,7 @@
                 <th scope="col">Reason</th>
                 <th scope="col">Notes</th>
                 <th scope="col">Status</th>
-                <th scope="col">Requested Date</th>
+                <th scope="col">Requested</th>
                 <th scope="col">Handle By</th>
                 <th scope="col">Update</th>
             </tr>
@@ -111,7 +112,7 @@
         <tbody class="table-group-divider">
             {% for request in requests %}
             <tr>
-                <td>{{ request[0] }}</td>  <!-- request_id -->
+                <td>{{ loop.index }}</td>  <!-- request_id -->
                 <td>{{ request[1] }}</td>  <!-- supervisor -->
                 <td>{{ request[2] }}</td>  <!-- employee -->
                 <td>{{ request[3] }}</td>  <!-- department -->
