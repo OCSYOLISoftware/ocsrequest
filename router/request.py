@@ -2,17 +2,20 @@ from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from model.handle_db import HandleDB
+from model.user_db import UserDB
+from model.request_db import Requestdb
 from router.dashboard import get_current_user
 
 router = APIRouter()
 template = Jinja2Templates(directory=('./view'))
 db = HandleDB()
+udb = UserDB()
+rdb = Requestdb()
 
 @router.get('/request', response_class=HTMLResponse)
 def show_request_form(req: Request, username: str = Depends(get_current_user)):
     # Obtener el employee_id del usuario que inició sesión
-    db = HandleDB()
-    user_data = db.get_only(username)
+    user_data = udb.get_only(username)
     if not user_data:
         return HTTPException(status_code=404, detail="Usuario no encontrado")
 
@@ -31,8 +34,8 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
     get_departments_by_employee = db.get_departments_by_employee(employee_id)
     supervisor = db.get_supervisor_for_current_user(username)
     # Obtener los datos de las tablas relacionadas
-    requests = db.get_all_requests(supervisor_id)
-    users = db.get_all()
+    requests = rdb.get_all_requests(supervisor_id)
+    users = udb.get_all()
     warnings = db.get_all_warnings()
     status = db.get_all_status()
     reasons = db.get_all_reasons()
@@ -71,7 +74,7 @@ def submit_request(
 ):
     try:
         # Insertar los datos en la tabla requests
-        db.insert_request(
+        rdb.insert_request(
             supervisor_id=supervisor_id,
             employee_id=employee_id,
             department_id=department_id,
@@ -91,9 +94,8 @@ def submit_request(
 
 @router.get("/editRequest/{request_id}", response_class=HTMLResponse)
 def edit_request(req: Request, request_id: int, username: str = Depends(get_current_user)):
-    db = HandleDB()  # Asegúrate de que HandleDB esté inicializado correctamente
-    request_data = db.get_request_by_id(request_id)
-    user_data = db.get_only(username)
+    request_data = rdb.get_request_by_id(request_id)
+    user_data = udb.get_only(username)
     if not user_data:
         return HTTPException(status_code=404, detail="Usuario no encontrado")
 
@@ -110,8 +112,8 @@ def edit_request(req: Request, request_id: int, username: str = Depends(get_curr
     # Obtener otras consultas relacionadas
     get_departments_by_employee = db.get_departments_by_employee(employee_id)
     supervisor = db.get_supervisor_for_current_user(username)
-    requests = db.get_all_requests(supervisor_id)
-    users = db.get_all()
+    requests = rdb.get_all_requests(supervisor_id)
+    users = udb.get_all()
     warnings = db.get_all_warnings()
     status = db.get_all_status()
     reasons = db.get_all_reasons()
@@ -153,7 +155,7 @@ def update_request(
 ):
     try:
         # Actualizar los datos de la solicitud en la base de datos
-        db.update_request(
+        rdb.update_request(
             request_id=request_id,
             supervisor_id=supervisor_id,
             employee_id=employee_id,

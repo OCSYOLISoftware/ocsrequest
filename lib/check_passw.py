@@ -1,8 +1,8 @@
-from model.handle_db import HandleDB
+from model.user_db import UserDB
 from werkzeug.security import check_password_hash
 
 def check_user(username, passw):
-    user = HandleDB()
+    user = UserDB()
     filter_user = user.get_only(username)
     if filter_user:
         same_passw = check_password_hash(filter_user[3], passw)
