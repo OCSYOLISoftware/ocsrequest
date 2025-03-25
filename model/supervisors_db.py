@@ -19,7 +19,7 @@ class SupervisorDB(HandleDB):
             raise
         finally:
             conn.close()
-            
+
     def get_supervisor_for_current_user(self, username: str):
         try:
             with self._connect() as conn:

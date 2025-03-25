@@ -37,8 +37,6 @@ class EmployeesDB(HandleDB):
         finally:
             conn.close()
 
-            
-        # Leer todas los empleados
     def get_all_employees(self):
         conn = self._connect()
         cur = conn.cursor()
@@ -75,7 +73,6 @@ class EmployeesDB(HandleDB):
         finally:
             conn.close()
 
-            
     def get_employee_by_id(self, employee_id: int):
         conn = self._connect()
         cur = conn.cursor()
@@ -124,7 +121,6 @@ class EmployeesDB(HandleDB):
         finally:
             conn.close()
 
-            
     def update_employee(self, employee_id, firstname, lastname, position_id, branch_id, modality_id, hiredate, department_id, status_id):
         conn = self._connect()
         cursor = conn.cursor()
@@ -173,7 +169,6 @@ class EmployeesDB(HandleDB):
         try:
             with self._connect() as conn:
                 cur = conn.cursor()
-                
                 query = """
                 SELECT 
                     e.employee_id, 
@@ -190,20 +185,14 @@ class EmployeesDB(HandleDB):
                 AND e.employee_id != ?
                 GROUP BY e.employee_id, e.firstname, e.lastname;
                 """
-                
                 # Si employee_id es el supervisor, pasas el mismo employee_id para ambos parámetros
                 cur.execute(query, (employee_id, employee_id))
                 rows = cur.fetchall()
                 employees_by_department = [{"employee_id": row[0], "name": row[1]} for row in rows]
                 return employees_by_department
-
         except sqlite3.Error as e:
             print(f"Error al obtener los empleados ligados al supervisor: {e}")
             raise
-
-
-
-
 
     def get_employee_counts(self):
         conn = self._connect()

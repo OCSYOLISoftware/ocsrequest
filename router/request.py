@@ -1,32 +1,34 @@
 from fastapi import APIRouter, Request, Form, Depends, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from model.handle_db import HandleDB
 from model.user_db import UserDB
+from model.handle_db import HandleDB
 from model.request_db import RequestDB
 from model.warnings_db import WarningDB
-from model.supervisors_db import SupervisorDB
 from model.employees_db import EmployeesDB
 from model.department_db import DepartmentDB
+from model.supervisors_db import SupervisorDB
 from router.dashboard import get_current_user
 
 router = APIRouter()
 template = Jinja2Templates(directory=('./view'))
-db = HandleDB()
+
 udb = UserDB()
+db = HandleDB()
 rdb = RequestDB()
 wdb = WarningDB()
-sdb = SupervisorDB()
 edb = EmployeesDB()
+sdb = SupervisorDB()
 ddb = DepartmentDB()
 
 @router.get('/request', response_class=HTMLResponse)
-def show_request_form(req: Request, username: str = Depends(get_current_user)):
+def show_request_form(req: Request):
     # Obtener el employee_id del usuario que inició sesión
+    username = req.cookies.get('username')
+    if not username:
+        return RedirectResponse(url='/', status_code=303)
+    
     user_data = udb.get_only(username)
-    if not user_data:
-        return HTTPException(status_code=404, detail="Usuario no encontrado")
-
     employee_id = user_data[1] 
     
     #Obtener supervisor
@@ -41,7 +43,6 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
     employees = edb.get_employees_by_department(employee_id)
     get_departments_by_employee = ddb.get_departments_by_employee(employee_id)
     supervisor = sdb.get_supervisor_for_current_user(username)
-    # Obtener los datos de las tablas relacionadas
     requests = rdb.get_all_requests(supervisor_id)
     users = udb.get_all()
     warnings = wdb.get_all_warnings()

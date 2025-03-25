@@ -14,7 +14,7 @@ class DepartmentDB(HandleDB):
         except sqlite3.Error as e:
             print(f"Error al obtener los departamentos: {e}")
             raise
-        
+
     def get_departments_by_employee(self, employee_id):
         try:
             with self._connect() as conn:

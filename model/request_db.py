@@ -41,8 +41,7 @@ class RequestDB(HandleDB):
             raise
         finally:
             conn.close()
-                
-        # Leer todas las solicitudes
+
     def get_all_requests(self, supervisor_id):
         conn = self._connect()
         cur = conn.cursor()
@@ -82,7 +81,6 @@ class RequestDB(HandleDB):
         finally:
             conn.close()
 
-        # Leer una solicitud por su request_id
     def get_request_by_id(self, request_id: int):
         conn = self._connect()
         cur = conn.cursor()
@@ -149,7 +147,6 @@ class RequestDB(HandleDB):
         finally:
             conn.close()
 
-
     def update_request(self, request_id: int, supervisor_id: int, employee_id: int, department_id: int,
                 warning_id: int, reason_id: int, notes: str, status_id: int, requestdate: str):
         conn = sqlite3.connect("./ocsrequest.db")
@@ -172,7 +169,6 @@ class RequestDB(HandleDB):
         finally:
             conn.close()
 
-    # Eliminar una solicitud por su request_id
     def delete_request(self, request_id: int):
         conn = self._connect()
         cur = conn.cursor()
@@ -184,7 +180,7 @@ class RequestDB(HandleDB):
             raise
         finally:
             conn.close()
-    
+
     def get_request_status_counts(self):
         conn = self._connect()
         cur = conn.cursor()

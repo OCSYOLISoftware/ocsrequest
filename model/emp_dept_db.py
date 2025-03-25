@@ -19,7 +19,7 @@ class EmployeeDepartmentDB(HandleDB):
             raise
         finally:
             conn.close()
-            
+
     def update_employee_department(self, employee_id: int, department_id: int):
         conn = self._connect()
         cur = conn.cursor()

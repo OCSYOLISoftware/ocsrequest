@@ -13,7 +13,6 @@ db = HandleDB()
 def signup(req: Request):
     return template.TemplateResponse('signup.html', {'request': req})
 
-#Ruta Data-Processing
 @router.post('/data-processing', response_class=HTMLResponse)
 def data_processing(employee_id: str = Form(), username: str = Form(), password_user: str = Form()):
     data_user = {

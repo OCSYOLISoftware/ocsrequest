@@ -3,14 +3,16 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from lib.check_passw import check_user
 from model.handle_db import HandleDB
-from model.employees_db import EmployeesDB
 from model.request_db import RequestDB
+from model.employees_db import EmployeesDB
+
 
 router = APIRouter()
 template = Jinja2Templates(directory=('./view'))
 db = HandleDB()
-edb = EmployeesDB()
 rdb = RequestDB()
+edb = EmployeesDB()
+
 
 #Dependencia para verificar autenticación    IMPORTAR ESTA FUNCION DONDE HAGA FALTA
 def get_current_user(req: Request):
@@ -22,8 +24,6 @@ def get_current_user(req: Request):
         )
     return username
 
-# ------------------Dashboard-----------------------------------------------------------------------------------------------------------------------------------------------------
-#dashboard maneja el inicio de sesión y guarda el nombre de usuario en una cookie.
 @router.post('/dashboard', response_class=HTMLResponse)
 def login_user(req: Request, username: str = Form(), password_user: str = Form()):
     verify = check_user(username, password_user)
@@ -35,8 +35,7 @@ def login_user(req: Request, username: str = Form(), password_user: str = Form()
     else:
         print(f"Error en la autenticación para el usuario: {username}")
         return RedirectResponse('/', status_code=303) 
-    
-#Dashboard muestra el dashboard solo si el usuario ha iniciado sesión.
+
 @router.get('/dashboard', response_class=HTMLResponse)
 def get_dashboard(req: Request):
     # Verificar si el usuario ha iniciado sesión
@@ -59,8 +58,7 @@ def get_dashboard(req: Request):
             "employee_counts": employee_counts
         }
     )
-    
-#logout elimina la cookie username y redirige al usuario a la página de inicio.
+
 @router.get('/logout')
 def logout():
     response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)

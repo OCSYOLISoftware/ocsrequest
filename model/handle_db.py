@@ -40,7 +40,7 @@ class HandleDB():
         except sqlite3.Error as e:
             print(f"Error al obtener todas las rasones: {e}")
             raise
-            
+
     def get_all_positions(self):
         try:
             with self._connect() as conn:
@@ -51,7 +51,7 @@ class HandleDB():
         except sqlite3.Error as e:
             print(f"Error al obtener los departamentos: {e}")
             raise
-        
+
     def get_all_branches(self):
         try:
             with self._connect() as conn:
@@ -62,7 +62,7 @@ class HandleDB():
         except sqlite3.Error as e:
             print(f"Error al obtener las sucursales: {e}")
             raise
-        
+
     def get_all_modalities(self):
         try:
             with self._connect() as conn:
@@ -73,4 +73,4 @@ class HandleDB():
         except sqlite3.Error as e:
             print(f"Error al obtener todas las modalidades: {e}")
             raise
-        
+

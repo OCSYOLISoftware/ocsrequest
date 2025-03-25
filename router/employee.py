@@ -3,15 +3,15 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from model.handle_db import HandleDB
 from model.employees_db import EmployeesDB
-from model.emp_dept_db import EmployeeDepartmentDB
 from model.department_db import DepartmentDB
+from model.emp_dept_db import EmployeeDepartmentDB
 
 router = APIRouter()
 template = Jinja2Templates(directory=('./view'))
 db = HandleDB()
 edb = EmployeesDB()
-EDdb =EmployeeDepartmentDB()
 ddb = DepartmentDB()
+EDdb =EmployeeDepartmentDB()
 
 @router.get("/addEmployee", response_class=HTMLResponse)
 def show_employee_form(req: Request):
@@ -119,7 +119,7 @@ def edit_employee(req: Request, employee_id: int):
             "employee_status": employee_status
         }
     )
-    
+
 @router.post("/updateEmployee/{employee_id}", response_class=HTMLResponse)
 def update_employee(
         req: Request,
