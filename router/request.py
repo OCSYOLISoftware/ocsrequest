@@ -3,14 +3,22 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from model.handle_db import HandleDB
 from model.user_db import UserDB
-from model.request_db import Requestdb
+from model.request_db import RequestDB
+from model.warnings_db import WarningDB
+from model.supervisors_db import SupervisorDB
+from model.employees_db import EmployeesDB
+from model.department_db import DepartmentDB
 from router.dashboard import get_current_user
 
 router = APIRouter()
 template = Jinja2Templates(directory=('./view'))
 db = HandleDB()
 udb = UserDB()
-rdb = Requestdb()
+rdb = RequestDB()
+wdb = WarningDB()
+sdb = SupervisorDB()
+edb = EmployeesDB()
+ddb = DepartmentDB()
 
 @router.get('/request', response_class=HTMLResponse)
 def show_request_form(req: Request, username: str = Depends(get_current_user)):
@@ -22,7 +30,7 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
     employee_id = user_data[1] 
     
     #Obtener supervisor
-    supervisor = db.get_supervisor_for_current_user(username)
+    supervisor = sdb.get_supervisor_for_current_user(username)
     if not supervisor:
         raise HTTPException(status_code=404, detail="Supervisor ni encontrado")
     
@@ -30,13 +38,13 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
     supervisor_id = supervisor["employee_id"]
 
     # Joins
-    employees = db.get_employees_by_department(employee_id)
-    get_departments_by_employee = db.get_departments_by_employee(employee_id)
-    supervisor = db.get_supervisor_for_current_user(username)
+    employees = edb.get_employees_by_department(employee_id)
+    get_departments_by_employee = ddb.get_departments_by_employee(employee_id)
+    supervisor = sdb.get_supervisor_for_current_user(username)
     # Obtener los datos de las tablas relacionadas
     requests = rdb.get_all_requests(supervisor_id)
     users = udb.get_all()
-    warnings = db.get_all_warnings()
+    warnings = wdb.get_all_warnings()
     status = db.get_all_status()
     reasons = db.get_all_reasons()
     
@@ -58,8 +66,6 @@ def show_request_form(req: Request, username: str = Depends(get_current_user)):
         }
     )
 
-#Request procesa los datos del formulario y los guarda en la base de datos
-# Ruta para procesar el formulario de solicitud
 @router.post("/request", response_class=HTMLResponse)
 def submit_request(
     req: Request,
@@ -73,7 +79,6 @@ def submit_request(
     username: str = Depends(get_current_user),  # Verifica que el usuario haya iniciado sesión
 ):
     try:
-        # Insertar los datos en la tabla requests
         rdb.insert_request(
             supervisor_id=supervisor_id,
             employee_id=employee_id,
@@ -100,21 +105,21 @@ def edit_request(req: Request, request_id: int, username: str = Depends(get_curr
         return HTTPException(status_code=404, detail="Usuario no encontrado")
 
     employee_id = user_data[1] 
-    supervisor = db.get_supervisor_for_current_user(username)
+    supervisor = sdb.get_supervisor_for_current_user(username)
     supervisor_id = supervisor["employee_id"]
 
     # Obtener el 'department_id' de la solicitud
     department_id = request_data.get("department_id") 
 
     # Usar el 'department_id' para obtener los empleados de ese departamento
-    employees = db.get_employees_by_department(department_id) 
+    employees = edb.get_employees_by_department(department_id) 
 
     # Obtener otras consultas relacionadas
-    get_departments_by_employee = db.get_departments_by_employee(employee_id)
-    supervisor = db.get_supervisor_for_current_user(username)
+    get_departments_by_employee = ddb.get_departments_by_employee(employee_id)
+    supervisor = sdb.get_supervisor_for_current_user(username)
     requests = rdb.get_all_requests(supervisor_id)
     users = udb.get_all()
-    warnings = db.get_all_warnings()
+    warnings = wdb.get_all_warnings()
     status = db.get_all_status()
     reasons = db.get_all_reasons()
 

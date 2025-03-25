@@ -2,10 +2,16 @@ from fastapi import APIRouter, Request, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from model.handle_db import HandleDB
+from model.employees_db import EmployeesDB
+from model.emp_dept_db import EmployeeDepartmentDB
+from model.department_db import DepartmentDB
 
 router = APIRouter()
 template = Jinja2Templates(directory=('./view'))
 db = HandleDB()
+edb = EmployeesDB()
+EDdb =EmployeeDepartmentDB()
+ddb = DepartmentDB()
 
 @router.get("/addEmployee", response_class=HTMLResponse)
 def show_employee_form(req: Request):
@@ -15,8 +21,8 @@ def show_employee_form(req: Request):
         return RedirectResponse(url='/', status_code=303)
     
     # Obtener todos los empleados desde la base de datos
-    employees = db.get_all_employees()
-    departments = db.get_all_departments()
+    employees = edb.get_all_employees()
+    departments = ddb.get_all_departments()
     positions = db.get_all_positions()
     branches = db.get_all_branches()
     modalities = db.get_all_modalities()
@@ -51,7 +57,7 @@ def add_employee(
 ):
     try:
         # Insertar los datos en la tabla employees
-        db.insert_employee(
+        edb.insert_employee(
             employee_id=employee_id,
             firstname=firstname,
             lastname=lastname,
@@ -63,7 +69,7 @@ def add_employee(
         )
 
         # Insertar los datos en la tabla employee_departments
-        db.insert_employee_department(
+        EDdb.insert_employee_department(
             employee_id=employee_id,
             department_id=department_id
         )
@@ -87,13 +93,13 @@ def edit_employee(req: Request, employee_id: int):
 
     # Obtener datos del empleado
     
-    employee = db.get_employee_by_id(employee_id)
+    employee = edb.get_employee_by_id(employee_id)
     if not employee:
         raise HTTPException(status_code=404, detail="Empleado no encontrado")
 
     # Obtener todas las listas necesarias
-    employees = db.get_all_employees()
-    departments = db.get_all_departments()
+    employees = edb.get_all_employees()
+    departments = ddb.get_all_departments()
     positions = db.get_all_positions()
     branches = db.get_all_branches()
     modalities = db.get_all_modalities()
@@ -129,7 +135,7 @@ def update_employee(
 ):
     try:
         # Actualizar los datos del empleado en la base de datos
-        db.update_employee(
+        edb.update_employee(
             employee_id=employee_id,
             firstname=firstname,
             lastname=lastname,
@@ -142,7 +148,7 @@ def update_employee(
         )
 
         # Actualizar el departamento del empleado
-        db.update_employee_department(
+        EDdb.update_employee_department(
             employee_id=employee_id,
             department_id=department_id
         )

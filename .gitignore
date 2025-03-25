@@ -7,6 +7,8 @@ __pycache__/
 # Ignorar caché de entornos virtuales
 venv/
 .venv/
+env/
+.env/
 
 # Caché de editores de código
 .vscode/

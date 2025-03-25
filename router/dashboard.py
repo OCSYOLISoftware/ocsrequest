@@ -3,10 +3,14 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from lib.check_passw import check_user
 from model.handle_db import HandleDB
+from model.employees_db import EmployeesDB
+from model.request_db import RequestDB
 
 router = APIRouter()
 template = Jinja2Templates(directory=('./view'))
 db = HandleDB()
+edb = EmployeesDB()
+rdb = RequestDB()
 
 #Dependencia para verificar autenticación    IMPORTAR ESTA FUNCION DONDE HAGA FALTA
 def get_current_user(req: Request):
@@ -40,8 +44,8 @@ def get_dashboard(req: Request):
     if not username:
         return RedirectResponse(url='/', status_code=303)
 
-    percentages = db.calculate_status_percentages()#test
-    employee_counts = db.get_employee_counts()
+    percentages = rdb.calculate_status_percentages()#test
+    employee_counts = edb.get_employee_counts()
     
     # Pasar los requests a la plantilla
     return template.TemplateResponse(
